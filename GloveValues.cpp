@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS 
 #include "GloveValues.hpp"
+#include "ImuConfiguration.hpp"
 #include <iomanip> //formatovany cas
 #include <ctime>
 #include <chrono>
@@ -39,13 +40,17 @@ GloveValues::~GloveValues() {
 
 void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 	
-
-	
 	std::string gloveName = board->name();
 	m_peripherals[gloveName] = board;
 
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
 	subscribe(gloveName , board);
+
+	//ak je trieda ImuConfiguration tak volame citanie 
+	auto imuConfigPtr = dynamic_cast<ImuConfiguration*>(this);
+	if (imuConfigPtr) {
+		imuConfigPtr->readImu();
+	}
 
 }
 

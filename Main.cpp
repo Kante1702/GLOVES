@@ -1,11 +1,12 @@
 //#include "GloveConnection.hpp"
 
-#include "GloveValues.hpp"
+#include "ImuConfiguration.hpp"
 #include <iostream>
 
 int main() {
 
-	 GloveValues glove;
+	//GloveValues glove; keby chcem len data zo senzoru 
+	ImuConfiguration glove; //okrem dat mame aj imu config 
 
 	std::cout << "Hladam rukavicu... (stlac Enter pre ukoncenie)" << std::endl;
 
@@ -15,7 +16,7 @@ int main() {
 	}
 
 	
-
+	
 	// kym nestlacim enter
 	std::cin.get();
 

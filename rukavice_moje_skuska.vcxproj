@@ -105,13 +105,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Include;D:\VYSKA\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include"D:\VYSKA\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include";%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Lib\Win\x64\Debug;D:\VYSKA\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>GSdkCoreStatic.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Lib\Win\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>GSdkCoreStatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,6 +135,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GloveValues.cpp" />
+    <ClCompile Include="ImuConfiguration.cpp" />
     <ClCompile Include="LoggerBase.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="GloveConnection.cpp" />
@@ -142,6 +143,7 @@
   <ItemGroup>
     <ClInclude Include="GloveConnection.hpp" />
     <ClInclude Include="GloveValues.hpp" />
+    <ClInclude Include="ImuConfiguration.hpp" />
     <ClInclude Include="LoggerBase.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
