@@ -42,7 +42,7 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
 	
 	//ak sa najde tak left ked nie tak right (npos v podstate znamena hladanie nebolo upesne)
-	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos)
+	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos || gloveName.find("4305") != std::string::npos)
 		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
 		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 
@@ -115,7 +115,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	
 	
 
-	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos)
+	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos || gloveName.find("4305") != std::string::npos)
 		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
 		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 
@@ -138,7 +138,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 	//veci na hlavicku
 	if (!m_headerWritten[gloveName]) {
-		logFile << "Timestamp";
+		logFile << "Timestamp " +gloveName;
 
 		for (int tag : assembly.tags()) {
 			if (m_logOnlyBending && (tag % 2 == 0))continue; //len ohyb preto %2
@@ -159,11 +159,13 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 		if (m_logOnlyBending && (tag % 2 == 0)) continue;
 
-		int index = assembly.findIndex(tag);
+		int index = assembly.findIndex(tag) *4;
 		float normalized = 0.0f;
 
-		if (index >= 0 && index < values.size()) {
-			normalized = static_cast<float>(values[index]) / 255.0f;
+		if (index >= 0 && index +3 < values.size()) {
+			float val;
+			std::memcpy(&val, &values[index], sizeof(float));
+			normalized = val / 5000.0f;
 		}
 		logFile << ";" << normalized;
 	}
@@ -184,7 +186,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 
 	//viac pozri StreamTimeslots.h
 	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
-	streamTimeslots.sensorsState = 6; //data o senzore prstov( data represents conductivity)
+	streamTimeslots.sensorsState = 6; //6 alebo GSdkBoardStreamTypeSensorsState; //data o senzore prstov( data represents conductivity)
 
 	/*
 	streamTimeslots.taredQuaternion = 6 //ak je treba aj polohu ruky(IMU)
@@ -194,6 +196,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 		this->printError("[ "+ gloveName + " ]"+ "Unable to set stream timeslots");
 		return;
 	}
+	
 
 
 	int streamID = board->streamReceived().connect([this,gloveName](const GSdk::Board::BoardStreamEventArgs& args) {
@@ -220,6 +223,8 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 		}
 
 
+
+
 		//GSdkBoardStreamTypeTaredQuaternion -> brief Tared relative reference orientation quaternion
 		if (args.streamType == GSdkBoardStreamTypeTaredQuaternion) {
 			auto quatArgs = static_cast<const GSdk::Board::BoardQuaternionfEventArgs&> (args);
@@ -228,6 +233,8 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 		}
 	});
 
+
+	this->printInfo("SUSBSISGSAGSD " + gloveName);
 	m_streamIDs[gloveName] = streamID;
 
 }

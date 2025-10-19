@@ -2,3 +2,6 @@ IMU konfigurácia je kľúčová preto, že ovplyvňuje kvalitu dát,
 z ktorých sa rozpoznávajú gestá.
 V bakalárke môžeš jasne ukázať, že systém načíta IMU config,
 a teda vieš garantovať presnosť a konzistentnosť meraní.
+
+
+
