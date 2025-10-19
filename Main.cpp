@@ -7,6 +7,7 @@ int main() {
 
 	//GloveValues glove; keby chcem len data zo senzoru 
 	ImuConfiguration glove; //okrem dat mame aj imu config 
+	glove.setOnlyBendingLog(true);
 
 	std::cout << "Hladam rukavicu... (stlac Enter pre ukoncenie)" << std::endl;
 

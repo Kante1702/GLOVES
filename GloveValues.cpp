@@ -4,6 +4,7 @@
 #include <iomanip> //formatovany cas
 #include <ctime>
 #include <chrono>
+#include <sstream>
 
 GloveValues::GloveValues() : GloveConnection() {
 	/////////nic
@@ -12,24 +13,16 @@ GloveValues::GloveValues() : GloveConnection() {
 	std::time_t t = std::time(nullptr); //v sekundach surovy cas
 	std::tm* now = std::localtime(&t); //rozdeli to na dni, hodiny ...
 
-	char filename[64];
-	std::strftime(filename, sizeof(filename), "GloveLOG_%Y%m%d_%H%M%S.csv", now);
-	m_logFile.open(filename);
-
-	if (m_logFile.is_open()) {
-		m_logFile << "Timestamp, GloveName, FingerIndex, Value\n";
-	}
-	else {
-		this->printError("Failed to open log fike for writing");
-	}
-
 
 }
 
 GloveValues::~GloveValues() {
-	if (m_logFile.is_open()) {
-		m_logFile.close();
+	for (auto& [name, file] : m_logFiles) {
+		if (file.is_open()) {
+			file.close();
+		}
 	}
+	
 	//pre ochranu aj tu je unsubscribe
 	if (!m_streamIDs.empty()) {
 		unsubscribe();
@@ -38,12 +31,61 @@ GloveValues::~GloveValues() {
 
 }
 
+
+
+
 void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 	
 	std::string gloveName = board->name();
 	m_peripherals[gloveName] = board;
 
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
+	
+	//ak sa najde tak left ked nie tak right (npos v podstate znamena hladanie nebolo upesne)
+	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos)
+		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
+		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
+
+	std::time_t t = std::time(nullptr);
+	std::tm* now = std::localtime(&t);
+	char filename[128];
+	
+	std::strftime(filename, sizeof(filename), (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
+		? "GloveLog_Left_%Y%m%d_%H%M%S.csv" : "GloveLog_Right_%Y%m%d_%H%M%S.csv",now);
+
+	std::ofstream& logFile = m_logFiles[gloveName];
+	logFile.open(filename);
+	if (!logFile.is_open()) {
+		this->printError("Failed to open log file for " + gloveName);
+	}
+	else {
+		m_headerWritten[gloveName] = false;
+	}
+
+
+
+	try {
+		
+
+		GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+		auto tags = assembly.tags();
+
+		std::cout << " DETECTED sensors for " << gloveName << "( " << ((position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) ? "LEFT " : "RIGHT ")
+			<< "hand" << std::endl;
+		for (int tag : tags) {
+
+			const auto& sensor = GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			std::cout << "TAG " << tag << "=> " << sensor.name() << " ( inverted = " << std::boolalpha
+				<< sensor.valueInverted() << " )" << std::endl;
+
+		}
+
+	}
+	catch(...){
+		this->printError("Failed to list sensors");
+	}
+
+
 	subscribe(gloveName , board);
 
 	//ak je trieda ImuConfiguration tak volame citanie 
@@ -59,42 +101,77 @@ void GloveValues::onPeripheralDisconnected() {
 	unsubscribe();
 }
 
+
+
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values) {
 
-	if (!m_logFile.is_open()) {
+	auto it = m_logFiles.find(gloveName);
+	if (it == m_logFiles.end() || !it->second.is_open())
+	{
 		return;
 	}
+		std::ofstream& logFile = it->second;
+	
+	
 
+	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos)
+		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
+		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
+
+	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
+	//casova znamka
 	auto now = std::chrono::system_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds> (now.time_since_epoch()) % 1000; //epoch 1.januara 1970 ... %1000 milisekundy aktualnej sekundy
 
 	std::time_t t = std::chrono::system_clock::to_time_t(now);
-	std::tm tm = *std::localtime(&t);
+	std::tm tm{};
+	localtime_s(&tm, &t);
+	
 	char TIMEstr[32];
 	std::strftime(TIMEstr, sizeof(TIMEstr), "%H: %M: %S", &tm);
 	
 	std::ostringstream timestamp;
 	timestamp << TIMEstr << "." << std::setfill('0') << std::setw(3) << ms.count();
 
-	//NORMOVANIE HODNOT SENZORA OD 0.0 - 1.0
-	std::vector<float> normalizedValues;
-	normalizedValues.reserve(values.size());
 
-	for (auto val : values) {
-		normalizedValues.push_back(static_cast<float>(val) / 255.0f);
+	//veci na hlavicku
+	if (!m_headerWritten[gloveName]) {
+		logFile << "Timestamp";
+
+		for (int tag : assembly.tags()) {
+			if (m_logOnlyBending && (tag % 2 == 0))continue; //len ohyb preto %2
+
+			const auto& sensor = GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			logFile << ";" << sensor.name();
+		}
+		logFile << "\n";
+		m_headerWritten[gloveName] = true;
+
+	}
+	
+	//logovanie a normalizacia hodnot od 0.0 - 1.0
+
+	logFile << timestamp.str();
+
+	for (int tag : assembly.tags()) {
+
+		if (m_logOnlyBending && (tag % 2 == 0)) continue;
+
+		int index = assembly.findIndex(tag);
+		float normalized = 0.0f;
+
+		if (index >= 0 && index < values.size()) {
+			normalized = static_cast<float>(values[index]) / 255.0f;
+		}
+		logFile << ";" << normalized;
 	}
 
-	m_logFile << timestamp.str() << gloveName;
+	logFile << "\n";
 
-	for (auto nv : normalizedValues) {
-		m_logFile << "," << nv;
-	}
-	m_logFile << "\n";
-
-	m_logFile.flush(); //zapisuje data v realnom case , nestratim posledne riadky 
+	logFile.flush(); //zapisuje data v realnom case , nestratim posledne riadky 
 }
-
 
 
 
@@ -103,13 +180,14 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 	
+	
 
 	//viac pozri StreamTimeslots.h
 	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
 	streamTimeslots.sensorsState = 6; //data o senzore prstov( data represents conductivity)
 
 	/*
-	streamTimeslots.taredQuaternion = 6 //ak je treba aj polohu ruky
+	streamTimeslots.taredQuaternion = 6 //ak je treba aj polohu ruky(IMU)
 	*/
 
 	if (!board->streamTimeslots().write(streamTimeslots)) {
@@ -170,14 +248,4 @@ void GloveValues::unsubscribe() {
 
 }
 
-
-
-/*
-
-
-				dokoncit treba rozoznat ktora rukavica co posiela napr pomocou kontajnera ako je 
-				vector alebo map
-
-
-*/
 
