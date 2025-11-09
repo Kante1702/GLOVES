@@ -141,6 +141,9 @@
     <ClCompile Include="GloveConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Gesture.hpp" />
+    <ClInclude Include="GestureLibrary.hpp" />
+    <ClInclude Include="GestureRecognizer.hpp" />
     <ClInclude Include="GloveConnection.hpp" />
     <ClInclude Include="GloveValues.hpp" />
     <ClInclude Include="ImuConfiguration.hpp" />

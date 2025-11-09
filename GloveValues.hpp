@@ -6,9 +6,11 @@
 #include "GloveConnection.hpp"
 #include <map>
 #include <fstream>
+#include <array>
 #include "BoardTools/ExternalSensorAssembly.h"
 #include "BoardTools/ExternalSensor.h"
 #include "BoardTools/WearingPosition.h"
+#include "GestureRecognizer.hpp"
 
 class GloveValues : public GloveConnection{
 
@@ -17,12 +19,17 @@ class GloveValues : public GloveConnection{
 	
 	std::map<std::string, int> m_streamIDs; // name -> streamID
 	std::ofstream m_logFile;
-	void logToCSV(const std::string& gloveName, const std::vector<uint8_t> values);
+	void logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position);
 	static GSdk::BoardTools::WearingPosition detectPosition(std::shared_ptr<GSdk::Board::BoardPeripheral> board);
+	std::array<float,5> getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly );
+
 
 	std::map<std::string, std::ofstream> m_logFiles;
 	std::map<std::string, bool> m_headerWritten;
 	bool m_logOnlyBending = false;
+	
+	GestureRecognizer m_rightGestureRecognizer;
+	GestureRecognizer m_leftGestureRecognizer;
 
 public: 
 	GloveValues();

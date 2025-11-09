@@ -44,5 +44,14 @@
     <ClInclude Include="ImuConfiguration.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Gesture.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GestureLibrary.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GestureRecognizer.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

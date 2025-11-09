@@ -1,4 +1,7 @@
 ﻿  GloveValues.cpp
+  ImuConfiguration.cpp
+  Main.cpp
+  Generating Code...
 GSdkCoreStatic.lib(Quaternion.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Quaternion.obj)' or at ''; linking object as if no debug info
 GSdkCoreStatic.lib(StreamTimeslots.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(StreamTimeslots.obj)' or at ''; linking object as if no debug info
 GSdkCoreStatic.lib(ExternalSensor.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ExternalSensor.obj)' or at ''; linking object as if no debug info
