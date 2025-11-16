@@ -1,4 +1,5 @@
 #include "ImuConfiguration.hpp"
+#include "GloveValues.hpp"
 
 ImuConfiguration::ImuConfiguration() {
 	

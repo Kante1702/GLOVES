@@ -37,14 +37,14 @@ GloveValues::~GloveValues() {
 void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 	
 	std::string gloveName = board->name();
-	m_peripherals[gloveName] = board;
+	m_peripherals[gloveName] = board; 
 
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
 	
-	//ak sa najde tak left ked nie tak right (npos v podstate znamena hladanie nebolo upesne)
-	GSdk::BoardTools::WearingPosition position = (gloveName.find("Left") != std::string::npos || gloveName.find("4305") != std::string::npos)
-		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
-		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
+	GSdk::BoardTools::WearingPosition position;
+
+	
+
 
 	std::time_t t = std::time(nullptr);
 	std::tm* now = std::localtime(&t);
@@ -102,6 +102,63 @@ void GloveValues::onPeripheralDisconnected() {
 }
 
 
+void GloveValues::startCalibrating() {
+	m_calibrationManager.startCalibration();
+	m_calibrationState = CalibrationState::CalibratingLeftOpen;
+	this->printInfo("[Calibration] Put LEFT hand fully OPEN and press 's' or 'S'");
+
+}
+
+void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, const std::array<float, 5>& rawright) {
+
+	switch (m_calibrationState)
+	{
+	
+	case CalibrationState::CalibratingLeftOpen:
+
+		m_calibrationManager.setOpenHand("Left", rawleft);
+		this->printInfo("[Calibration] LEFT OPEN stored. Make LEFT FIST!");
+		m_calibrationState = CalibrationState::CalibratingLeftFist;
+		break;
+
+	case CalibrationState::CalibratingLeftFist:
+		m_calibrationManager.setFist("Left", rawleft);
+		this->printInfo("[Calibration] LEFT FIST stored. Put RIGHT hand fully OPEN.");
+		m_calibrationState = CalibrationState::CalibratingRightOpen;
+		break;
+
+	case CalibrationState::CalibratingRightOpen:
+
+		m_calibrationManager.setOpenHand("Right", rawright);
+		this->printInfo("[Calibration] RIGHT OPEN stored. Make RIGHT FIST!");
+		m_calibrationState = CalibrationState::CalibratingRightFist;
+		break;
+
+	case CalibrationState::CalibratingRightFist:
+
+		m_calibrationManager.setFist("Right", rawright);
+		this->printInfo("[Calibration] RIGHT FIST stored. Calibration DONE!");
+
+		//dokoncenie
+		m_calibrationManager.finishCalibration();
+		m_calibrationManager.saveToCSV("Left");
+		m_calibrationManager.saveToCSV("Right");
+		m_calibrationState = CalibrationState::Done;
+		break;
+	
+	case CalibrationState::Done:
+		printInfo("[Calibration] Saved/finished calibration files.");
+		break;
+	default:
+		break;
+	}
+
+
+}
+
+
+
+
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
@@ -116,8 +173,9 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
-
+	// ------------------------------------------------------------
 	//casova znamka
+	// ------------------------------------------------------------
 	auto now = std::chrono::system_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds> (now.time_since_epoch()) % 1000; //epoch 1.januara 1970 ... %1000 milisekundy aktualnej sekundy
 
@@ -131,8 +189,9 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	std::ostringstream timestamp;
 	timestamp << TIMEstr << "." << std::setfill('0') << std::setw(3) << ms.count();
 
-
+	// ------------------------------------------------------------
 	//veci na hlavicku
+	// ------------------------------------------------------------
 	if (!m_headerWritten[gloveName]) {
 		logFile << "Timestamp " +gloveName;
 
@@ -148,10 +207,51 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	}
 	
 	
+	// ------------------------------------------------------------
+	// raw normalizovane 0-1
+	// ------------------------------------------------------------
+	auto rawValues = getNormalizedFingerValues(values,assembly);
+	
+	std::array<float, 5> fingerRaw{};
+	std::copy_n(rawValues.begin(), 5, fingerRaw.begin());
 
-	//logovanie a rozpoznavanie 
-	auto normalizedValues = getNormalizedFingerValues(values,assembly);
+	// ------------------------------------------------------------
+	// kalibracia - ak prebieha zbierame len raw hodnoty
+	// ------------------------------------------------------------
 
+
+	if (m_calibrationManager.m_isCalibrating) {
+		m_calibrationManager.updateRaw(gloveName, fingerRaw);
+
+
+		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
+			m_lastRawLeft = fingerRaw;
+		else
+			m_lastRawRight = fingerRaw;
+
+
+
+		logFile << timestamp.str();
+		for (float f : fingerRaw) {
+			logFile << ";" << f;
+		}
+		logFile << "\n";
+		logFile.flush();
+		return;
+
+	}
+
+
+
+	// ------------------------------------------------------------
+	//normalizacia podla kalibracie 
+	// ------------------------------------------------------------
+
+	auto normalizedValues = m_calibrationManager.normalize(gloveName, fingerRaw);
+
+	// ------------------------------------------------------------
+	//logovanie normalizovanych hodnot 
+	// ------------------------------------------------------------
 	logFile << timestamp.str();
 	for (float normalized : normalizedValues) {
 		logFile << ";" << normalized;
@@ -161,24 +261,41 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 	logFile.flush(); //zapisuje data v realnom case , nestratim posledne riadky 
 
-	//gesture recognition - invertujeme poradie pre pravu ruku vo funkcii GestureLibrary::recognize()
-	if (normalizedValues.size() >= 5) {
-		std::array<float, 5> fingerValues = { 0.0f,0.0f ,0.0f ,0.0f ,0.0f };
-		std::copy_n(normalizedValues.begin(), 5 , fingerValues.begin());//source_begin , n , destination_begin
+	// ------------------------------------------------------------
+	// mapa prstov
+	// ------------------------------------------------------------
+
+	//korektne mapovanie prstov pre lavu ruku
+	std::array<float, 5> fingerValues;
 		
-		std::optional<std::string> recognized;
+		
 		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) {
-			recognized = m_leftGestureRecognizer.recognize(fingerValues, position);
+			fingerValues[0] = normalizedValues[4]; //thumb 
+			fingerValues[1] = normalizedValues[3]; //index
+			fingerValues[2] = normalizedValues[2]; //middle
+			fingerValues[3] = normalizedValues[1]; //ring
+			fingerValues[4] = normalizedValues[0]; //pinky
 		}
 		else {
-			recognized = m_rightGestureRecognizer.recognize(fingerValues, position);
+			fingerValues = normalizedValues;
 		}
 
+		if (!m_calibrationManager.isCalibrated(gloveName)) {
+			return;
+		}
+
+
+		//rozpoznavanie
+		auto recognized = (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) 
+			? m_leftGestureRecognizer.recognize(fingerValues, position) 
+			: m_rightGestureRecognizer.recognize(fingerValues, position);
+		
+		
 		if (recognized) {
 			this->printInfo("[" + gloveName + " ] Gesture detected: " + *recognized);
 		}
 
-	}
+	
 
 
 }
@@ -215,7 +332,7 @@ std::array<float,5> GloveValues::getNormalizedFingerValues(const std::vector<uin
 void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 	
 	
-
+	
 	//viac pozri StreamTimeslots.h
 	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
 	streamTimeslots.sensorsState = 6; //6 alebo GSdkBoardStreamTypeSensorsState; //data o senzore prstov( data represents conductivity)
@@ -230,7 +347,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 	}
 	
 	GSdk::BoardTools::WearingPosition position =
-		(gloveName.find("Left") != std::string::npos || gloveName.find("4305") != std::string::npos)
+		( gloveName.find("4305") != std::string::npos)
 		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
 		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 

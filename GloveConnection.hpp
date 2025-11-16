@@ -10,6 +10,9 @@
 
 class GloveConnection: public LoggerBase {
 
+	
+
+
 public: 
 	GloveConnection();
 	~GloveConnection();
@@ -23,7 +26,7 @@ protected:
 	//hooky pre dalsie zdrojaky 
 	virtual void onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {};
 	virtual void onPeripheralDisconnected() {};
-
+	void disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> board);
 
 
 	GSdk::Board::PeripheralCentralPtr m_central; //central

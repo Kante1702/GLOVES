@@ -52,7 +52,7 @@ bool GloveConnection::connect() {
 				if (board->start()) {
 					
 					this->printInfo("Status(after start): "+ to_string(peripheral->status()));
-					m_peripheral->emulationState().write(true);
+					disableHID(board);
 
 					//zavola sa hook = nadchadzajuci kod moze reagovat
 					onPeripheralConnected(board);
@@ -89,7 +89,32 @@ void GloveConnection::disconnect() {
 }
 
 
+void GloveConnection::disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 
+	GSdk::Board::EmulationModes modes = GSdk::Board::getEmptyEmulationModes();
+
+	//dolezite len prstove data
+	modes.fingers = true;
+
+	//ostatne pre istotu nastavime na false
+	modes.acceleration = false;
+	modes.barometer = false;
+	modes.inputAxis = false;
+	modes.joystick = false;
+	modes.mouse = false;
+
+	if (!board->emulationModes().write(modes)) {
+		this->printError("Failed to write emulation modes");
+		return;
+	}
+
+	
+
+	if (!board->emulationState().write(true)) {
+		this->printError("Failed to enable emulation state");
+		return;
+	}
+}
 
 
 
