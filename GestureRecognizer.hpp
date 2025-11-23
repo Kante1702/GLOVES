@@ -18,9 +18,6 @@ public:
 		
 		std::array<float, 5> ordereValues = fingerValues;
 
-		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) {
-			std::reverse(ordereValues.begin(), ordereValues.end());
-		}
 
 		for (const auto& gesture : library.getGesture()) {
 

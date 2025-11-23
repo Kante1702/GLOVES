@@ -43,7 +43,23 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	
 	GSdk::BoardTools::WearingPosition position;
 
-	
+	////////////////////////////////
+	//urcenie podla id
+	//////////////
+	if (gloveName.find("4305") != std::string::npos) {
+		m_leftGloveName = gloveName;
+		position = GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove;
+	}
+	// RIGHT = 4272
+	else if (gloveName.find("4272") != std::string::npos) {
+		m_rightGloveName = gloveName;
+		position = GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
+	}
+	else {
+		this->printError("Unknown glove detected: " + gloveName);
+		return; 
+	}
+
 
 
 	std::time_t t = std::time(nullptr);
@@ -170,6 +186,11 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	}
 		std::ofstream& logFile = it->second;
 	
+	///klucove urcenie strany
+		std::string sideKEY = (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) ?
+			"Left" : "Right";
+
+
 
 
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
@@ -221,7 +242,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 
 	if (m_calibrationManager.m_isCalibrating) {
-		m_calibrationManager.updateRaw(gloveName, fingerRaw);
+		m_calibrationManager.updateRaw(sideKEY, fingerRaw);
 
 
 		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
@@ -247,7 +268,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	//normalizacia podla kalibracie 
 	// ------------------------------------------------------------
 
-	auto normalizedValues = m_calibrationManager.normalize(gloveName, fingerRaw);
+	auto normalizedValues = m_calibrationManager.normalize(sideKEY,  fingerRaw);
 
 	// ------------------------------------------------------------
 	//logovanie normalizovanych hodnot 
@@ -280,7 +301,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 			fingerValues = normalizedValues;
 		}
 
-		if (!m_calibrationManager.isCalibrated(gloveName)) {
+		if (!m_calibrationManager.isCalibrated(sideKEY)) {
 			return;
 		}
 

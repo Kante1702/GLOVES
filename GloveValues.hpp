@@ -37,6 +37,8 @@ class GloveValues : public GloveConnection{
 	GestureRecognizer m_leftGestureRecognizer;
 	std::string m_leftGloveName;
 	std::string m_rightGloveName;
+	const char* EXPECTED_LEFT_GLOVE = "CaptoGlove4305";
+	const char* EXPECTED_RIGHT_GLOVE = "CaptoGlove4272";
 
 public: 
 	GloveValues();
