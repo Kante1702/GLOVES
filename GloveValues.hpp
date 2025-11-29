@@ -15,30 +15,35 @@
 #include "CalibrationState.hpp"
 
 
-class GloveValues : public GloveConnection{
+class GloveValues : public GloveConnection {
 
 	void subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board);
 	void unsubscribe();
-	
+
 	std::map<std::string, int> m_streamIDs; // name -> streamID
 	std::ofstream m_logFile;
 	void logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position);
-	static GSdk::BoardTools::WearingPosition detectPosition(std::shared_ptr<GSdk::Board::BoardPeripheral> board);
-	std::array<float,5> getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly );
-	
+	std::array<float, 5> getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly);
+	void updateGestures() {};
+	void handleLeftGesture(const std::string& gestureName, const std::array<float, 5>& values) {}; //konkretne roboticke aplikacie pre lavu ruku 
+	void handleRightControl(const std::string& gestureName, const std::array<float, 5>& values) {};//konkretne roboticke aplikacie pre pravu ruku 
+
 
 	std::map<std::string, std::ofstream> m_logFiles;
 	std::map<std::string, bool> m_headerWritten;
-	
+
 	bool m_logOnlyBending = false;
-	
+	bool leftUnlocked = false;
+
+
 	CalibrationState m_calibrationState = CalibrationState::Idle;
 	GestureRecognizer m_rightGestureRecognizer;
 	GestureRecognizer m_leftGestureRecognizer;
 	std::string m_leftGloveName;
 	std::string m_rightGloveName;
-	const char* EXPECTED_LEFT_GLOVE = "CaptoGlove4305";
-	const char* EXPECTED_RIGHT_GLOVE = "CaptoGlove4272";
+	std::array<float, 5> m_lastNormalizedLeft{};
+	std::array<float, 5> m_lastNormalizedRight{};
+
 
 public: 
 	GloveValues();

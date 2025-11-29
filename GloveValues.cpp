@@ -121,7 +121,7 @@ void GloveValues::onPeripheralDisconnected() {
 void GloveValues::startCalibrating() {
 	m_calibrationManager.startCalibration();
 	m_calibrationState = CalibrationState::CalibratingLeftOpen;
-	this->printInfo("[Calibration] Put LEFT hand fully OPEN and press 's' or 'S'");
+	this->printInfo("[Calibration] For 3-5s move freely to max and min then put LEFT hand fully OPEN and press 's' or 'S'");
 
 }
 
@@ -172,8 +172,19 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 }
 
+void GloveValues::updateGestures() {
 
+}
 
+void GloveValues::handleLeftGesture(const std::string& gestureName, const std::array<float, 5>& values) {
+	// zatial iba vypis
+	printInfo("[LEFT GESTURE] Detected: " + gestureName);
+}
+
+void GloveValues::handleRightControl(const std::string& gestureName, const std::array<float, 5>& values) {
+	// zatial iba vypis
+	printInfo("[RIGHT GESTURE] Detected: " + gestureName);
+}
 
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
@@ -332,7 +343,7 @@ std::array<float,5> GloveValues::getNormalizedFingerValues(const std::vector<uin
 		}
 		int index = assembly.findIndex(tag) * 4;
 		float val = 0.0f;
-
+		
 		if (index >= 0 && index + 3 < values.size()) {
 			std::memcpy(&val, &values[index], sizeof(float));
 			

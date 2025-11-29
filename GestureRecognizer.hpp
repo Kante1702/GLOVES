@@ -5,18 +5,30 @@
 #include <optional>
 #include <string>
 #include <array>
+#include <unordered_map>;
+#include <chrono>
 
 
 class GestureRecognizer {
 
 	GestureLibrary library;
+	
+	//uchovavanie start casu pre kazde gesto
+	std::unordered_map<std::string, std::chrono::steady_clock::time_point> gestureStartTime;
+
+	
+
 
 public:
 	GestureRecognizer() :library() {}
 
 	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues , GSdk::BoardTools::WearingPosition position) {
 		
-		std::array<float, 5> ordereValues = fingerValues;
+
+		auto now = std::chrono::steady_clock::now();
+
+
+	
 
 
 		for (const auto& gesture : library.getGesture()) {
@@ -24,14 +36,30 @@ public:
 			bool matching = true;
 
 			for (size_t i = 0; i < 5; ++i) {
-				if (ordereValues[i] < gesture.lowerTresholds[i] || ordereValues[i] > gesture.upperTresholds[i]) {
+				if (fingerValues[i] < gesture.lowerTresholds[i] || fingerValues[i] > gesture.upperTresholds[i]) {
 					matching = false;
 					break;
 				}
 			}
 
 			if (matching) {
-				return gesture.name;
+
+				if (gestureStartTime.find(gesture.name) == gestureStartTime.end()) {
+					gestureStartTime[gesture.name] = now;
+				}
+				else {
+
+					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - gestureStartTime[gesture.name]).count();
+
+					if (elapsed) {
+
+						gestureStartTime.erase(gesture.name);//reset po detekcii
+						return gesture.name;
+					}
+				}
+			}
+			else {
+				gestureStartTime.erase(gesture.name);//ak gesto nepasuje, reset casu
 			}
 
 		}

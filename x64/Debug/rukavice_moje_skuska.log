@@ -1,4 +1,17 @@
-﻿GSdkCoreStatic.lib(Quaternion.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Quaternion.obj)' or at ''; linking object as if no debug info
+﻿  GloveValues.cpp
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(52,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'GloveValues.cpp')
+  
+  ImuConfiguration.cpp
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(52,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'ImuConfiguration.cpp')
+  
+  Main.cpp
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(52,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'Main.cpp')
+  
+  Generating Code...
+GSdkCoreStatic.lib(Quaternion.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Quaternion.obj)' or at ''; linking object as if no debug info
 GSdkCoreStatic.lib(StreamTimeslots.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(StreamTimeslots.obj)' or at ''; linking object as if no debug info
 GSdkCoreStatic.lib(ExternalSensor.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ExternalSensor.obj)' or at ''; linking object as if no debug info
 GSdkCoreStatic.lib(ExternalSensorAssembly.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ExternalSensorAssembly.obj)' or at ''; linking object as if no debug info

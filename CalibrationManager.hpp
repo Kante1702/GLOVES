@@ -145,7 +145,7 @@ public:
 
 		data[gloveName] = d;
 
-		if (d.openedSet & d.fistSet) {
+		if (d.openedSet && d.fistSet) {
 			m_isCalibrating = false;
 		}
 		std::cout << "[Calibration] Loaded CSV for " << gloveName << std::endl;
