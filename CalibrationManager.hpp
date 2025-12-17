@@ -33,16 +33,31 @@ public:
 
 	//uklada hodnoty pre otvorenu ruku (kalibracia)
 	void setOpenHand(const std::string& gloveName, const std::array<float, 5>& values) {
+		auto& d = data[gloveName];
 
-		data[gloveName].open = values;
-		data[gloveName].openedSet = true;
+		for (int i = 0; i < 5; i++) {
+			d.open[i] = d.maxValues[i];
+		}
+		d.openedSet = true;
 
+		// OPEN = maximum (1.0)
+		for (int i = 0; i < 5; i++) {
+			d.maxValues[i] = std::max(d.maxValues[i], values[i]);
+		}
 	}
 
 	//uklada hodnoty pre zatvorenu ruku (kalibracia)
 	void setFist(const std::string& gloveName, const std::array<float, 5>& values) {
-		data[gloveName].fist = values;
-		data[gloveName].fistSet = true;
+		auto& d = data[gloveName];
+
+		for (int i = 0; i < 5; i++) {
+			d.fist[i] = d.minValues[i];
+		}
+		d.fistSet = true;
+		// FIST = minimum (0.0)
+		for (int i = 0; i < 5; i++) {
+			d.minValues[i] = std::min(d.minValues[i], values[i]);
+		}
 	}
 
 	//kotrola ci je kalibracia kompletna

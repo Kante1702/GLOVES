@@ -121,7 +121,7 @@ void GloveValues::onPeripheralDisconnected() {
 void GloveValues::startCalibrating() {
 	m_calibrationManager.startCalibration();
 	m_calibrationState = CalibrationState::CalibratingLeftOpen;
-	this->printInfo("[Calibration] For 3-5s move freely to max and min then put LEFT hand fully OPEN and press 's' or 'S'");
+	this->printInfo("[Calibration] put LEFT hand fully OPEN and press 's' or 'S'");
 
 }
 
@@ -172,6 +172,7 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 }
 
+/*
 void GloveValues::updateGestures() {
 
 }
@@ -185,7 +186,7 @@ void GloveValues::handleRightControl(const std::string& gestureName, const std::
 	// zatial iba vypis
 	printInfo("[RIGHT GESTURE] Detected: " + gestureName);
 }
-
+*/
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {

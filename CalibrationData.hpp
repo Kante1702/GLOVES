@@ -33,16 +33,19 @@ struct CalibrationData {
 	//normalizacia 
 	float normalizeFinger(int finger, float raw) const
 	{
-		float min = minValues[finger];
-		float max = maxValues[finger];
-		
-		if (max - min < 1.0f)
-		{
+		float min = fist[finger];
+		float max = open[finger];
+
+		if (max - min < 0.001f)
 			return 0.0f;
-		}
 
 		float norma = (raw - min) / (max - min);
-		return std::clamp(norma, 0.0f, 1.0f);
+		norma = std::clamp(norma, 0.0f, 1.0f);
+
+		if (norma < 0.3f)
+			norma = 0.0f;
+
+		return norma;
 
 	}
 
