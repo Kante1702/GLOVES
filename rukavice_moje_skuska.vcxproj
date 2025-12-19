@@ -135,6 +135,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GloveValues.cpp" />
+    <ClCompile Include="HandType.cpp" />
     <ClCompile Include="ImuConfiguration.cpp" />
     <ClCompile Include="LoggerBase.cpp" />
     <ClCompile Include="Main.cpp" />

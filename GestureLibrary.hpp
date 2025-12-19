@@ -15,7 +15,7 @@ public:
 		gestures.push_back(Gesture("Point", {0.0f,0.55f ,0.0f ,0.0f,0.0f }, { 0.55f ,1.0f ,0.55f ,0.55f,0.55f }));
 		
 		
-
+https://www.google.com/search?q=prsty+na+ruke&sourceid=chrome&ie=UTF-8
 
 
 		/////////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ public:
 
 		//prava CUSTOM MODE - nieco 
 
-		//gestures.push_back(Gesture("Right_Custom_", {}, {})); //nieco //thumb and index straight
+		//gestures.push_back(Gesture("Right_Custom_Mode", {}, {})); //nieco //index and pinky straight
 
 		//Prava mozno stop /start
 		//gestures.push_back(Gesture("Right_Start_Resume", {}, {})); //thumbs up
@@ -61,10 +61,10 @@ public:
 		//gestures.push_back(Gesture("Left_Service_Mode", {}, {}));  //thumb and middle straight
 
 		//kladny smer
-		//gestures.push_back(Gesture("Left_positive_direc", {}, {})); // index straight
+		//gestures.push_back(Gesture("Left_Positive_Direction", {}, {})); // index straight
 
 		//zaporny smer
-		//gestures.push_back(Gesture("Left_negative_direc", {}, {})); //pinky straight
+		//gestures.push_back(Gesture("Left_Negative_Direction", {}, {})); //pinky straight
 
 		//start/resuume 
 		//gestures.push_back(Gesture("Left_Start_Resume", {}, {})); // thumbs up
