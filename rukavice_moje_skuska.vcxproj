@@ -135,7 +135,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GloveValues.cpp" />
-    <ClCompile Include="HandType.cpp" />
     <ClCompile Include="ImuConfiguration.cpp" />
     <ClCompile Include="LoggerBase.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -150,6 +149,7 @@
     <ClInclude Include="GestureRecognizer.hpp" />
     <ClInclude Include="GloveConnection.hpp" />
     <ClInclude Include="GloveValues.hpp" />
+    <ClInclude Include="HandType.hpp" />
     <ClInclude Include="ImuConfiguration.hpp" />
     <ClInclude Include="LoggerBase.hpp" />
   </ItemGroup>

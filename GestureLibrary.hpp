@@ -3,6 +3,7 @@
 #define GESTURELIBRARY_HPP
 
 #include "Gesture.hpp"
+#include "HandType.hpp"
 #include <vector>
 
 class GestureLibrary {
@@ -10,83 +11,86 @@ class GestureLibrary {
 public:
 	GestureLibrary() {
 		//thumb, index, middle, ring, pinky
-		gestures.push_back(Gesture("Fist", { 0.0f,0.0f,0.0f ,0.0f ,0.0f /*0.1fqq*/}, {0.2f,0.2f ,0.2f ,0.2f ,0.8f}));
+		//gestures.push_back(Gesture("Fist", { 0.0f,0.0f,0.0f ,0.0f ,0.0f /*0.1fqq*/}, {0.2f,0.2f ,0.2f ,0.2f ,0.8f},HandType::Left));
 
-		gestures.push_back(Gesture("Point", {0.0f,0.55f ,0.0f ,0.0f,0.0f }, { 0.55f ,1.0f ,0.55f ,0.55f,0.55f }));
+		//gestures.push_back(Gesture("Point", {0.0f,0.55f ,0.0f ,0.0f,0.0f }, { 0.55f ,1.0f ,0.55f ,0.55f,0.55f })); 
 		
 		
-https://www.google.com/search?q=prsty+na+ruke&sourceid=chrome&ie=UTF-8
 
 
 		/////////////////////////////////////////////////////////////////////////////
 
 		//prava ruka lock/unlock gesto
-		gestures.push_back(Gesture("Lock_Unlock", { 0.55f,0.55f ,0.0f ,0.0f,0.55f }, { 1.0f ,1.0f ,0.55f ,0.55f,1.0f },1000)); //thumb, index, little straight
+		gestures.push_back(Gesture("Lock_Unlock", { 0.4f,0.4f ,0.0f ,0.0f,0.4f }, { 1.0f ,1.0f ,0.55f ,0.55f,1.0f },HandType::Right,800, true)); //thumb, index, little straight
 
 		//prava TRANSLATION MODE - X,Y,Z
-		gestures.push_back(Gesture("Right_X",{ 0.0f,0.65f ,0.65f ,0.0f,0.0f},{0.35f ,1.0f ,1.0f ,0.35f,0.35f})); //X //index and middle straight
+		gestures.push_back(Gesture("Right_X",{ 0.0f,0.7f ,0.7f ,0.0f,0.0f},{0.4f ,1.0f ,1.0f ,0.4f,0.4f},HandType::Right)); //X //index and middle straight
 
-		gestures.push_back(Gesture("Right_Y", { 0.0f,0.65f ,0.65f ,0.65f,0.0f }, { 0.35 ,1.0f ,1.0f ,1.0f,0.35f }));//Y //index,middle and ring straight
+		gestures.push_back(Gesture("Right_Y", { 0.0f,0.7f ,0.7f ,0.7f,0.0f }, { 0.4 ,1.0f ,1.0f ,1.0f,0.4f },HandType::Right));//Y //index,middle and ring straight
 
-		gestures.push_back(Gesture("Right_Z", { 0.0f,0.8f ,0.8f ,0.8f,0.8f }, { 0.1f ,1.0f ,1.0f ,1.0f,1.0f })); //Z //thumb closed others straights
+		gestures.push_back(Gesture("Right_Z", { 0.0f,0.8f ,0.8f ,0.8f,0.8f }, { 0.1f ,1.0f ,1.0f ,1.0f,1.0f },HandType::Right)); //Z //thumb closed others straights
 
 		//prava ROTATION MODE - Yaw ,Pitch, Roll 
-		//gestures.push_back(Gesture("Right_Yaw", {}, {})); // Yaw //index straight
+		gestures.push_back(Gesture("Right_Yaw", { 0.0f,0.7f ,0.0f ,0.0f,0.0f }, { 0.4f ,1.0f ,0.4f ,0.4f,0.4f }, HandType::Right)); // Yaw //index straight
 
-		//gestures.push_back(Gesture("Right_Pitch", {}, {})); //Pitch //middle straight 
+		gestures.push_back(Gesture("Right_Pitch", { 0.0f,0.0f ,0.7f ,0.0f,0.0f }, { 0.4f ,0.4f ,1.0f ,0.4f,0.4f }, HandType::Right)); //Pitch //middle straight 
 
-		//gestures.push_back(Gesture("Right_Roll", {}, {})); //Roll //pinky straight
+		gestures.push_back(Gesture("Right_Roll",{ 0.0f,0.0f ,0.0f ,0.0f,0.8f }, { 0.3f ,0.3f ,0.3f ,0.3f,1.0f }, HandType::Right)); //Roll //pinky straight
 
 		//prava CUSTOM MODE - nieco 
 
-		//gestures.push_back(Gesture("Right_Custom_Mode", {}, {})); //nieco //index and pinky straight
+		gestures.push_back(Gesture("Right_Custom_Mode", { 0.0f,0.6f ,0.0f ,0.0f,0.7f }, { 0.3f ,1.0f ,0.3f ,0.3f,1.0f }, HandType::Right,200)); //nieco //index and pinky straight
 
 		//Prava mozno stop /start
-		//gestures.push_back(Gesture("Right_Start_Resume", {}, {})); //thumbs up
-		//gestures.push_back(Gesture("Right_Stop", { 0.0f,0.0f,0.0f ,0.0f ,0.0f }, { 0.2f,0.2f ,0.2f ,0.2f ,0.8f }));	//fist
+		gestures.push_back(Gesture("Right_Stop_Resume", { 0.0f,0.0f ,0.0f ,0.0f,0.0f }, { 0.4f,0.4f ,0.4f ,0.4f ,0.4f },HandType::Right,500)); //fist
 
 
 		///// LAVA RUKA
 
 		//xyz mode
-		//gestures.push_back(Gesture("Left_XYZ_Mode", {}, {})); //thumb and index straight 
+		gestures.push_back(Gesture("Left_XYZ_Mode", {0.7f,0.7f ,0.0f ,0.0f,0.0f }, { 1.0f ,1.0f ,0.4f ,0.4f,0.4f },HandType::Left,750)); //thumb and index straight 
 
 		//Rotation mode
-		//gestures.push_back(Gesture("Left_Rotation_Mode", {}, {})); //thumb,index, midlle straight
+		gestures.push_back(Gesture("Left_Rotation_Mode", { 0.7f,0.7f ,0.7f ,0.0f,0.0f }, { 1.0f ,1.0f ,1.0f ,0.4f,0.4f }, HandType::Left,750)); //thumb,index, midlle straight
 
 		//Custom mode
-		//gestures.push_back(Gesture("Left_Custom_Mode", {}, {})); //thumb,index,middle,ring straight
+		gestures.push_back(Gesture("Left_Custom_Mode", { 0.7f,0.7f ,0.7f ,0.65f,0.0f }, { 1.0f ,1.0f ,1.0f ,1.0f,0.4f }, HandType::Left,750)); //thumb,index,middle,ring straight
 
 		//Service mode
-		//gestures.push_back(Gesture("Left_Service_Mode", {}, {}));  //thumb and middle straight
-
+		gestures.push_back(Gesture("Left_Service_Mode", { 0.7f,0.0f ,0.7f ,0.0f,0.0f }, { 1.0f ,0.4f ,1.0f ,0.4f,0.4f }, HandType::Left,750));  //thumb and middle straight
+		
 		//kladny smer
-		//gestures.push_back(Gesture("Left_Positive_Direction", {}, {})); // index straight
+		gestures.push_back(Gesture("Left_Positive_Direction", { 0.0f,0.75f ,0.0f ,0.0f,0.0f }, { 0.4f ,1.0f ,0.4f ,0.4f,0.4f }, HandType::Left,550)); // index straight
 
 		//zaporny smer
-		//gestures.push_back(Gesture("Left_Negative_Direction", {}, {})); //pinky straight
+		gestures.push_back(Gesture("Left_Negative_Direction", { 0.0f,0.0f ,0.0f ,0.0f,0.7f }, { 0.4f ,0.4f ,0.4f ,0.65f,1.0f }, HandType::Left, 550)); //pinky straight
 
 		//start/resuume 
-		//gestures.push_back(Gesture("Left_Start_Resume", {}, {})); // thumbs up
+		gestures.push_back(Gesture("Left_Stop_Resume", { 0.0f,0.0f ,0.0f ,0.0f,0.0f }, { 0.4f,0.4f ,0.4f ,0.4f ,0.4f },HandType::Left,500)); // fist
 
-		//stop 
-		//gestures.push_back(Gesture("Left_stop",  {0.0f,0.0f,0.0f ,0.0f ,0.0f }, {0.2f,0.2f ,0.2f ,0.2f ,0.8f})); //fist
-
-
-
-
-		/*
 		
-						DOKONCIT GESTAAA
 
-		*/
 
+
+		
 
 
 	}
-	const std::vector<Gesture>& getGesture() {
-		return gestures;
+
+	std::vector<Gesture> getGesturesForHand(HandType hand) const {
+
+		std::vector<Gesture> result;
+		for (const auto& g : gestures) {
+			if (g.hand == hand) {
+				result.push_back(g);
+			}
+
+		}
+		return result;
 	}
+
+
+
 
 
 private:

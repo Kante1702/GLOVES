@@ -4,6 +4,7 @@
 #define	GLOVEVALUES_HPP
 
 #include "GloveConnection.hpp"
+#include "HandType.hpp"
 #include <map>
 #include <fstream>
 #include <array>
@@ -34,11 +35,11 @@ class GloveValues : public GloveConnection {
 
 	bool m_logOnlyBending = false;
 	bool leftUnlocked = false;
-
+	bool m_leftHandEnabled = true;
 
 	CalibrationState m_calibrationState = CalibrationState::Idle;
-	GestureRecognizer m_rightGestureRecognizer;
-	GestureRecognizer m_leftGestureRecognizer;
+	GestureRecognizer m_rightGestureRecognizer{ HandType::Right };
+	GestureRecognizer m_leftGestureRecognizer{HandType::Left};
 	std::string m_leftGloveName;
 	std::string m_rightGloveName;
 	std::array<float, 5> m_lastNormalizedLeft{};

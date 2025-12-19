@@ -2,6 +2,7 @@
 #ifndef GESTURERECOGNIZER_HPP
 #define GESTURERECOGNIZER_HPP
 #include "GestureLibrary.hpp"
+#include "HandType.hpp"
 #include <optional>
 #include <string>
 #include <array>
@@ -12,7 +13,9 @@
 class GestureRecognizer {
 
 	GestureLibrary library;
-	
+	HandType hand;
+
+
 	//uchovavanie start casu pre kazde gesto
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> gestureStartTime;
 
@@ -20,18 +23,18 @@ class GestureRecognizer {
 
 
 public:
-	GestureRecognizer() :library() {}
+	GestureRecognizer(HandType h) : hand(h) {}
 
-	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues , GSdk::BoardTools::WearingPosition position) {
+	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues ) {
 		
 
 		auto now = std::chrono::steady_clock::now();
-
+		auto gestures = library.getGesturesForHand(hand);
 
 	
 
 
-		for (const auto& gesture : library.getGesture()) {
+		for (const auto& gesture : gestures) {
 
 			bool matching = true;
 
@@ -44,14 +47,14 @@ public:
 
 			if (matching) {
 
-				if (gestureStartTime.find(gesture.name) == gestureStartTime.end()) {
+				if (!gestureStartTime.count(gesture.name) ){
 					gestureStartTime[gesture.name] = now;
 				}
 				else {
 
 					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - gestureStartTime[gesture.name]).count();
 
-					if (elapsed) {
+					if (elapsed >= gesture.holdTimeMs) {
 
 						gestureStartTime.erase(gesture.name);//reset po detekcii
 						return gesture.name;

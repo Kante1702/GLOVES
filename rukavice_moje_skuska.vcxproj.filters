@@ -30,9 +30,6 @@
     <ClCompile Include="ImuConfiguration.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HandType.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GloveConnection.hpp">
@@ -63,6 +60,9 @@
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CalibrationState.hpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HandType.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
   </ItemGroup>

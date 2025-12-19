@@ -1,40 +1,40 @@
 ﻿  GloveValues.cpp
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305: 'initializing': truncation from 'double' to '_Ty'
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         with
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         [
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:             _Ty=float
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         ]
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         with
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         [
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:             _Ty=float
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         ]
   (compiling source file 'GloveValues.cpp')
   
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(8,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   (compiling source file 'GloveValues.cpp')
   
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(55,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   (compiling source file 'GloveValues.cpp')
   
   ImuConfiguration.cpp
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305: 'initializing': truncation from 'double' to '_Ty'
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         with
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         [
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:             _Ty=float
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         ]
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         with
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         [
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:             _Ty=float
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         ]
   (compiling source file 'ImuConfiguration.cpp')
   
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(8,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   (compiling source file 'ImuConfiguration.cpp')
   
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(55,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   (compiling source file 'ImuConfiguration.cpp')
   
   Main.cpp
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305: 'initializing': truncation from 'double' to '_Ty'
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         with
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         [
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:             _Ty=float
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,78): warning C4305:         ]
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         with
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         [
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:             _Ty=float
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(29,75): warning C4305:         ]
   (compiling source file 'Main.cpp')
   
-D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(8,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   (compiling source file 'Main.cpp')
   
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\CalibrationData.hpp(55,29): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data

@@ -191,145 +191,157 @@ void GloveValues::handleRightControl(const std::string& gestureName, const std::
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
 
+	// ------------------------------------------------------------
+		// kontrola log súboru
+		// ------------------------------------------------------------
 	auto it = m_logFiles.find(gloveName);
 	if (it == m_logFiles.end() || !it->second.is_open())
-	{
 		return;
-	}
-		std::ofstream& logFile = it->second;
-	
-	///klucove urcenie strany
-		std::string sideKEY = (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) ?
-			"Left" : "Right";
 
+	std::ofstream& logFile = it->second;
 
+	// ------------------------------------------------------------
+	// urèenie ruky
+	// ------------------------------------------------------------
+	const bool isLeft =
+		(position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove);
 
+	const std::string sideKEY = isLeft ? "Left" : "Right";
 
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
 	// ------------------------------------------------------------
-	//casova znamka
+	// èasová znaèka
 	// ------------------------------------------------------------
 	auto now = std::chrono::system_clock::now();
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds> (now.time_since_epoch()) % 1000; //epoch 1.januara 1970 ... %1000 milisekundy aktualnej sekundy
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+		now.time_since_epoch()) % 1000;
 
 	std::time_t t = std::chrono::system_clock::to_time_t(now);
 	std::tm tm{};
 	localtime_s(&tm, &t);
-	
+
 	char TIMEstr[32];
-	std::strftime(TIMEstr, sizeof(TIMEstr), "%H: %M: %S", &tm);
-	
+	std::strftime(TIMEstr, sizeof(TIMEstr), "%H:%M:%S", &tm);
+
 	std::ostringstream timestamp;
 	timestamp << TIMEstr << "." << std::setfill('0') << std::setw(3) << ms.count();
 
 	// ------------------------------------------------------------
-	//veci na hlavicku
+	// hlavièka CSV
 	// ------------------------------------------------------------
 	if (!m_headerWritten[gloveName]) {
-		logFile << "Timestamp " +gloveName;
+		logFile << "Timestamp_" << gloveName;
 
 		for (int tag : assembly.tags()) {
-			if (m_logOnlyBending && (tag % 2 == 0))continue; //len ohyb preto %2
+			if (m_logOnlyBending && (tag % 2 == 0))
+				continue;
 
-			const auto& sensor = GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			const auto& sensor =
+				GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
 			logFile << ";" << sensor.name();
 		}
+
 		logFile << "\n";
 		m_headerWritten[gloveName] = true;
-
 	}
-	
-	
+
 	// ------------------------------------------------------------
-	// raw normalizovane 0-1
+	// RAW hodnoty (HW poradie senzorov)
 	// ------------------------------------------------------------
-	auto rawValues = getNormalizedFingerValues(values,assembly);
-	
+	auto rawValues = getNormalizedFingerValues(values, assembly);
+
 	std::array<float, 5> fingerRaw{};
 	std::copy_n(rawValues.begin(), 5, fingerRaw.begin());
 
 	// ------------------------------------------------------------
-	// kalibracia - ak prebieha zbierame len raw hodnoty
+	// KALIBRÁCIA – VŽDY z fingerRaw (HW poradie!)
 	// ------------------------------------------------------------
-
-
 	if (m_calibrationManager.m_isCalibrating) {
+
 		m_calibrationManager.updateRaw(sideKEY, fingerRaw);
 
-
-		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
+		if (isLeft)
 			m_lastRawLeft = fingerRaw;
 		else
 			m_lastRawRight = fingerRaw;
 
-
-
 		logFile << timestamp.str();
-		for (float f : fingerRaw) {
+		for (float f : fingerRaw)
 			logFile << ";" << f;
-		}
 		logFile << "\n";
 		logFile.flush();
 		return;
-
 	}
 
-
-
-	// ------------------------------------------------------------
-	//normalizacia podla kalibracie 
-	// ------------------------------------------------------------
-
-	auto normalizedValues = m_calibrationManager.normalize(sideKEY,  fingerRaw);
+	if (!m_calibrationManager.isCalibrated(sideKEY))
+		return;
 
 	// ------------------------------------------------------------
-	//logovanie normalizovanych hodnot 
+	// NORMALIZÁCIA POD¼A KALIBRÁCIE (stále HW poradie)
+	// ------------------------------------------------------------
+	auto normalizedValues =
+		m_calibrationManager.normalize(sideKEY, fingerRaw);
+
+	// ------------------------------------------------------------
+	// LOG normalizovaných hodnôt (HW poradie)
 	// ------------------------------------------------------------
 	logFile << timestamp.str();
-	for (float normalized : normalizedValues) {
-		logFile << ";" << normalized;
+	for (float v : normalizedValues)
+		logFile << ";" << v;
+	logFile << "\n";
+	logFile.flush();
+
+	// ------------------------------------------------------------
+	// MAPOVANIE PRSTOV – LEN PRE GESTÁ
+	// ------------------------------------------------------------
+	std::array<float, 5> gestureValues{};
+
+	if (isLeft) {
+		// ¾avá ruka – prehodené poradie
+		gestureValues[0] = normalizedValues[4]; // thumb
+		gestureValues[1] = normalizedValues[3]; // index
+		gestureValues[2] = normalizedValues[2]; // middle
+		gestureValues[3] = normalizedValues[1]; // ring
+		gestureValues[4] = normalizedValues[0]; // pinky
+	}
+	else {
+		// pravá ruka – rovnaké poradie
+		gestureValues = normalizedValues;
 	}
 
-	logFile << "\n";
-
-	logFile.flush(); //zapisuje data v realnom case , nestratim posledne riadky 
-
 	// ------------------------------------------------------------
-	// mapa prstov
+	// ROZPOZNÁVANIE GEST
 	// ------------------------------------------------------------
 
-	//korektne mapovanie prstov pre lavu ruku
-	std::array<float, 5> fingerValues;
-		
-		
-		if (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) {
-			fingerValues[0] = normalizedValues[4]; //thumb 
-			fingerValues[1] = normalizedValues[3]; //index
-			fingerValues[2] = normalizedValues[2]; //middle
-			fingerValues[3] = normalizedValues[1]; //ring
-			fingerValues[4] = normalizedValues[0]; //pinky
-		}
-		else {
-			fingerValues = normalizedValues;
-		}
+	// PRAVÁ RUKA – lock/unlock
+	if (!isLeft) {
 
-		if (!m_calibrationManager.isCalibrated(sideKEY)) {
-			return;
-		}
+		auto recognized =
+			m_rightGestureRecognizer.recognize(gestureValues);
 
-
-		//rozpoznavanie
-		auto recognized = (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) 
-			? m_leftGestureRecognizer.recognize(fingerValues, position) 
-			: m_rightGestureRecognizer.recognize(fingerValues, position);
-		
-		
 		if (recognized) {
-			this->printInfo("[" + gloveName + " ] Gesture detected: " + *recognized);
+			if (*recognized == "Lock_Unlock") {
+				m_leftHandEnabled = !m_leftHandEnabled;
+				this->printInfo("[SYSTEM] Left hand " +
+					std::string(m_leftHandEnabled ? "ENABLED" : "DISABLED"));
+			}
+			else {
+				this->printInfo("[RIGHT] Gesture: " + *recognized);
+			}
 		}
+	}
 
-	
+	// ¼AVÁ RUKA – len ak je povolená
+	if (isLeft && m_leftHandEnabled) {
 
+		auto recognized =
+			m_leftGestureRecognizer.recognize(gestureValues);
+
+		if (recognized) {
+			this->printInfo("[LEFT] Gesture: " + *recognized);
+		}
+	}
 
 }
 
