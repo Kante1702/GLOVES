@@ -172,21 +172,101 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 }
 
-/*
-void GloveValues::updateGestures() {
+
+void GloveValues::handleLeftGesture(const std::string& gesture) {
+	
+	if (!m_leftHandEnabled) {
+		return;
+	}
+
+	// BEZPECNOSTNE GESTA
+	if (gesture == "Left_Stop_Resume") {
+		this->printInfo("[EMERGENCY][LEFT] STOP / RESUME");
+		return;
+	}
+	
+	
+	// JEDNOTLIVE MODY
+	if (gesture == "Left_XYZ_Mode") {
+		m_currentMode = ControlMode::XYZ;
+		this->printInfo("-------------- [MODE] XYZ --------------");
+
+	}
+	else if (gesture == "Left_Rotation_Mode") {
+		m_currentMode = ControlMode::Rotation;
+		this->printInfo("-------------- [MODE] ROTATION --------------");
+	}
+
+	else if (gesture == "Left_Custom_Mode") {
+		m_currentMode = ControlMode::Custom;
+		this->printInfo("-------------- [MODE] CUSTOM --------------");
+	}
+
+	else if (gesture == "Left_Service_Mode") {
+		//m_currentMode = ControlMode::Service; doplnit ked tak
+		this->printInfo("-------------- [MODE] SERVICE --------------");
+	}
+
+	else if (gesture == "Left_Positive_Direction") {
+		this->printInfo("[LEFT] Positive direction");
+	}
+	else if (gesture == "Left_Negative_Direction") {
+		this->printInfo("[LEFT] Negative direction");
+	}
 
 }
 
-void GloveValues::handleLeftGesture(const std::string& gestureName, const std::array<float, 5>& values) {
-	// zatial iba vypis
-	printInfo("[LEFT GESTURE] Detected: " + gestureName);
+
+void GloveValues::handleRightGesture(const std::string& gesture) {
+
+	if (gesture == "Lock_Unlock") {
+		m_leftHandEnabled = !m_leftHandEnabled;
+		this->printInfo("[SYSTEM] Left hand " + std::string(m_leftHandEnabled ? "ENABLED" : "DISABLED"));
+		return;
+	}
+
+	//Bezpecnostne
+	if (gesture == "Right_Stop_Resume") {
+		this->printInfo("[EMERGENCY][RIGHT] STOP / RESUME");
+		return;
+	}
+
+	//Filtrovanie podla modu
+	if (!isRightGestureAllowed(gesture)) {
+		return;
+	}
+	this->printInfo("[RIGHT][" + std::to_string((int)m_currentMode) + "] " + gesture);
+
+
+
 }
 
-void GloveValues::handleRightControl(const std::string& gestureName, const std::array<float, 5>& values) {
-	// zatial iba vypis
-	printInfo("[RIGHT GESTURE] Detected: " + gestureName);
+
+bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
+
+	//vzdy povolene
+	if (m_globalSafetyGestures.count(gesture)) {
+		return true;
+	}
+	//vzdy povolene
+	if (gesture == "Lock_Unlock") {
+		return true;
+	}
+	
+	//ak nic tak nic nepovol
+	auto it = m_allowedRightGesture.find(m_currentMode);
+	if (it == m_allowedRightGesture.end()) {
+		return false;	
+	}
+	//povolene gesta pre aktualny mod3
+
+	return it->second.count(gesture) > 0;
+
+
 }
-*/
+
+
+
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
@@ -315,32 +395,21 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	// ------------------------------------------------------------
 
 	// PRAVÁ RUKA – lock/unlock
-	if (!isLeft) {
+	if (isLeft) {
+		if (!m_leftHandEnabled) {
+			return;
+		}
 
-		auto recognized =
-			m_rightGestureRecognizer.recognize(gestureValues);
-
-		if (recognized) {
-			if (*recognized == "Lock_Unlock") {
-				m_leftHandEnabled = !m_leftHandEnabled;
-				this->printInfo("[SYSTEM] Left hand " +
-					std::string(m_leftHandEnabled ? "ENABLED" : "DISABLED"));
-			}
-			else {
-				this->printInfo("[RIGHT] Gesture: " + *recognized);
-			}
+		if (auto Left_gesture = m_leftGestureRecognizer.recognize(gestureValues)) {
+			handleLeftGesture(*Left_gesture);
 		}
 	}
-
-	// ¼AVÁ RUKA – len ak je povolená
-	if (isLeft && m_leftHandEnabled) {
-
-		auto recognized =
-			m_leftGestureRecognizer.recognize(gestureValues);
-
-		if (recognized) {
-			this->printInfo("[LEFT] Gesture: " + *recognized);
+	else {
+		if (auto Right_gesture = m_rightGestureRecognizer.recognize(gestureValues)) {
+			handleRightGesture(*Right_gesture);
 		}
+	
+
 	}
 
 }

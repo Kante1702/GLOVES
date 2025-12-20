@@ -5,7 +5,9 @@
 
 #include "GloveConnection.hpp"
 #include "HandType.hpp"
+#include "ControlMode.hpp"
 #include <map>
+#include <unordered_set>
 #include <fstream>
 #include <array>
 #include "BoardTools/ExternalSensorAssembly.h"
@@ -25,9 +27,9 @@ class GloveValues : public GloveConnection {
 	std::ofstream m_logFile;
 	void logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position);
 	std::array<float, 5> getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly);
-	void updateGestures() {};
-	void handleLeftGesture(const std::string& gestureName, const std::array<float, 5>& values) {}; //konkretne roboticke aplikacie pre lavu ruku 
-	void handleRightControl(const std::string& gestureName, const std::array<float, 5>& values) {};//konkretne roboticke aplikacie pre pravu ruku 
+	void handleLeftGesture(const std::string& gesture);
+	void handleRightGesture(const std::string& gesture);
+	bool isRightGestureAllowed(const std::string& gesture) const;
 
 
 	std::map<std::string, std::ofstream> m_logFiles;
@@ -37,6 +39,7 @@ class GloveValues : public GloveConnection {
 	bool leftUnlocked = false;
 	bool m_leftHandEnabled = true;
 
+	ControlMode m_currentMode = ControlMode::None;
 	CalibrationState m_calibrationState = CalibrationState::Idle;
 	GestureRecognizer m_rightGestureRecognizer{ HandType::Right };
 	GestureRecognizer m_leftGestureRecognizer{HandType::Left};
@@ -45,6 +48,39 @@ class GloveValues : public GloveConnection {
 	std::array<float, 5> m_lastNormalizedLeft{};
 	std::array<float, 5> m_lastNormalizedRight{};
 
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	// GLOBAL (SAFETY) GESTURE
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	const std::unordered_set<std::string> m_globalSafetyGestures = {
+		"Left_Stop_Resume",
+		"Right_Stop_Resume"
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ALLOWED GESTURE
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	std::unordered_map < ControlMode, std::unordered_set<std::string>> m_allowedRightGesture = {
+
+		{
+			ControlMode::XYZ,{
+				"Right_X", "Right_Y" ,"Right_Z"
+			}
+		},
+		{
+			ControlMode::Rotation,{
+				"Right_Yaw" , "Right_Pitch" , "Right_Roll"
+			}
+		},
+		{
+			ControlMode::Custom,{
+				"Right_Custom_Mode"
+			}
+		},
+		
+	};
 
 public: 
 	GloveValues();
