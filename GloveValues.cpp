@@ -78,7 +78,22 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 		m_headerWritten[gloveName] = false;
 	}
 
+	//raw
+	char rawFilename[128];
 
+	std::strftime(
+		rawFilename,
+		sizeof(rawFilename),
+		(position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
+		? "GloveRAW_Left_%Y%m%d_%H%M%S.csv"
+		: "GloveRAW_Right_%Y%m%d_%H%M%S.csv",
+		now
+	);
+
+	std::ofstream& rawFile = m_rawLogFiles[gloveName];
+	rawFile.open(rawFilename);
+	m_rawHeaderWritten[gloveName] = false;
+	//////
 
 	try {
 		
@@ -170,6 +185,63 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 	}
 
 
+}
+
+void GloveValues::logRawToCSV(
+	const std::string& gloveName,
+	const std::vector<uint8_t>& values,
+	GSdk::BoardTools::WearingPosition position)
+{
+	auto it = m_rawLogFiles.find(gloveName);
+	if (it == m_rawLogFiles.end() || !it->second.is_open())
+		return;
+
+	std::ofstream& rawFile = it->second;
+
+	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
+	// ----- èas -----
+	auto now = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+		now.time_since_epoch()) % 1000;
+
+	std::time_t t = std::chrono::system_clock::to_time_t(now);
+	std::tm tm{};
+	localtime_s(&tm, &t);
+
+	char timeStr[32];
+	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
+
+	// ----- hlavièka -----
+	if (!m_rawHeaderWritten[gloveName]) {
+		rawFile << "Timestamp";
+
+		for (int tag : assembly.tags()) {
+			const auto& sensor =
+				GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			rawFile << ";" << sensor.name();
+		}
+
+		rawFile << "\n";
+		m_rawHeaderWritten[gloveName] = true;
+	}
+
+	// ----- hodnoty -----
+	rawFile << timeStr << "." << std::setw(3) << std::setfill('0') << ms.count();
+
+	for (int tag : assembly.tags()) {
+		int index = assembly.findIndex(tag) * 4;
+		float val = 0.0f;
+
+		if (index >= 0 && index + 3 < values.size()) {
+			std::memcpy(&val, &values[index], sizeof(float));
+		}
+
+		rawFile << ";" << val;
+	}
+
+	rawFile << "\n";
+	rawFile.flush();
 }
 
 
@@ -482,7 +554,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 
 
 			//this->printInfo("[ "+ gloveName + " ]" + "Received sensorsState data (" + std::to_string(value.size()) + " bytes)");
-			
+			logRawToCSV(gloveName, value, position);
 			logToCSV(gloveName, value,position);
 
 		}

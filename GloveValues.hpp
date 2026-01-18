@@ -35,6 +35,12 @@ class GloveValues : public GloveConnection {
 	std::map<std::string, std::ofstream> m_logFiles;
 	std::map<std::string, bool> m_headerWritten;
 
+	///////////////raw data
+	std::map<std::string, std::ofstream> m_rawLogFiles;
+	std::map<std::string, bool> m_rawHeaderWritten;
+	void logRawToCSV(const std::string& gloveName,const std::vector<uint8_t>& values,GSdk::BoardTools::WearingPosition position);
+	//////
+
 	bool m_logOnlyBending = false;
 	bool leftUnlocked = false;
 	bool m_leftHandEnabled = true;
