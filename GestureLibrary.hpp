@@ -37,7 +37,7 @@ public:
 
 		gestures.push_back(Gesture("Right_Roll",{ 0.0f,0.0f ,0.0f ,0.0f,0.8f }, { 0.3f ,0.4f ,0.3f ,0.3f,1.0f }, HandType::Right)); //Roll //pinky straight
 
-		//prava CUSTOM MODE - nieco 
+		//prava CUSTOM MODE 
 
 		gestures.push_back(Gesture("Right_Custom_Mode", { 0.0f,0.0f ,0.7f ,0.7f,0.0f }, { 0.3f ,0.3f ,1.0f ,1.0f,0.3f }, HandType::Right,500)); //nieco //middle and ring straight
 

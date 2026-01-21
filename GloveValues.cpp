@@ -187,62 +187,7 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 }
 
-void GloveValues::logRawToCSV(
-	const std::string& gloveName,
-	const std::vector<uint8_t>& values,
-	GSdk::BoardTools::WearingPosition position)
-{
-	auto it = m_rawLogFiles.find(gloveName);
-	if (it == m_rawLogFiles.end() || !it->second.is_open())
-		return;
 
-	std::ofstream& rawFile = it->second;
-
-	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
-
-	// ----- èas -----
-	auto now = std::chrono::system_clock::now();
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-		now.time_since_epoch()) % 1000;
-
-	std::time_t t = std::chrono::system_clock::to_time_t(now);
-	std::tm tm{};
-	localtime_s(&tm, &t);
-
-	char timeStr[32];
-	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
-
-	// ----- hlavièka -----
-	if (!m_rawHeaderWritten[gloveName]) {
-		rawFile << "Timestamp";
-
-		for (int tag : assembly.tags()) {
-			const auto& sensor =
-				GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
-			rawFile << ";" << sensor.name();
-		}
-
-		rawFile << "\n";
-		m_rawHeaderWritten[gloveName] = true;
-	}
-
-	// ----- hodnoty -----
-	rawFile << timeStr << "." << std::setw(3) << std::setfill('0') << ms.count();
-
-	for (int tag : assembly.tags()) {
-		int index = assembly.findIndex(tag) * 4;
-		float val = 0.0f;
-
-		if (index >= 0 && index + 3 < values.size()) {
-			std::memcpy(&val, &values[index], sizeof(float));
-		}
-
-		rawFile << ";" << val;
-	}
-
-	rawFile << "\n";
-	rawFile.flush();
-}
 
 
 void GloveValues::handleLeftGesture(const std::string& gesture) {
@@ -337,7 +282,70 @@ bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 
 }
 
+void GloveValues::logRawToCSV(
+	const std::string& gloveName,
+	const std::vector<uint8_t>& values,
+	GSdk::BoardTools::WearingPosition position)
+{
+	auto it = m_rawLogFiles.find(gloveName);
+	if (it == m_rawLogFiles.end() || !it->second.is_open())
+		return;
 
+	std::ofstream& rawFile = it->second;
+
+	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
+	// ----- CAS -----
+	auto now = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+		now.time_since_epoch()) % 1000;
+
+	std::time_t t = std::chrono::system_clock::to_time_t(now);
+	std::tm tm{};
+	localtime_s(&tm, &t);
+
+	char timeStr[32];
+	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
+
+	// ----- hlavicka -----
+	if (!m_rawHeaderWritten[gloveName]) {
+		rawFile << "Timestamp_" << gloveName;
+
+		for (int tag : assembly.tags()) {
+			if (m_logOnlyBending && (tag % 2 == 0))
+				continue;
+
+			const auto& sensor =
+				GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			rawFile << ";" << sensor.name();
+		}
+
+		rawFile << "\n";
+		m_rawHeaderWritten[gloveName] = true;
+	}
+
+	// ----- hodnoty -----
+	rawFile << timeStr << "." << std::setw(3)
+		<< std::setfill('0') << ms.count();
+
+	for (int tag : assembly.tags()) {
+		if (m_logOnlyBending && (tag % 2 == 0))
+			continue;
+
+		int index = assembly.findIndex(tag) * 4;
+		float val = 0.0f;
+
+		if (index >= 0 && index + 3 < values.size()) {
+			std::memcpy(&val, &values[index], sizeof(float));
+		}
+
+		rawFile << ";" << val;
+	}
+
+	rawFile << "\n";
+	rawFile.flush();
+
+}
 
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
