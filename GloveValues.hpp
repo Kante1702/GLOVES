@@ -24,6 +24,9 @@ class GloveValues : public GloveConnection {
 	void unsubscribe();
 
 	std::map<std::string, int> m_streamIDs; // name -> streamID
+	bool m_streamConnected = false;
+	int m_globalStreamID = -1;
+	std::map<std::string, GSdk::BoardTools::WearingPosition> m_glovePositions;
 	std::ofstream m_logFile;
 	void logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position);
 	std::array<float, 5> getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly);
@@ -38,7 +41,7 @@ class GloveValues : public GloveConnection {
 	///////////////raw data
 	std::map<std::string, std::ofstream> m_rawLogFiles;
 	std::map<std::string, bool> m_rawHeaderWritten;
-	void logRawToCSV(const std::string& gloveName,const std::vector<uint8_t>& values,GSdk::BoardTools::WearingPosition position);
+	void logRawToCSV(const std::string& gloveName, const std::vector<uint8_t>& values, GSdk::BoardTools::WearingPosition position);
 	//////
 
 	bool m_logOnlyBending = false;
@@ -48,7 +51,7 @@ class GloveValues : public GloveConnection {
 	ControlMode m_currentMode = ControlMode::None;
 	CalibrationState m_calibrationState = CalibrationState::Idle;
 	GestureRecognizer m_rightGestureRecognizer{ HandType::Right };
-	GestureRecognizer m_leftGestureRecognizer{HandType::Left};
+	GestureRecognizer m_leftGestureRecognizer{ HandType::Left };
 	std::string m_leftGloveName;
 	std::string m_rightGloveName;
 	std::array<float, 5> m_lastNormalizedLeft{};
@@ -85,10 +88,10 @@ class GloveValues : public GloveConnection {
 				"Right_Custom_Mode"
 			}
 		},
-		
+
 	};
 
-public: 
+public:
 	GloveValues();
 	~GloveValues();
 	void setOnlyBendingLog(bool value) { m_logOnlyBending = value; };
@@ -102,11 +105,9 @@ protected:
 	std::map<std::string, std::shared_ptr<GSdk::Board::BoardPeripheral>> m_peripherals;
 	void onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) override;
 	void onPeripheralDisconnected() override;
-	
+
 
 };
 
 
 #endif // !GLOVEVALUES_HPP
-
-

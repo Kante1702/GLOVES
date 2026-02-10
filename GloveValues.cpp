@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS 
+ï»¿#define _CRT_SECURE_NO_WARNINGS 
 #include "GloveValues.hpp"
 #include "ImuConfiguration.hpp"
 #include <iomanip> //formatovany cas
@@ -22,7 +22,7 @@ GloveValues::~GloveValues() {
 			file.close();
 		}
 	}
-	
+
 	//pre ochranu aj tu je unsubscribe
 	if (!m_streamIDs.empty()) {
 		unsubscribe();
@@ -35,12 +35,12 @@ GloveValues::~GloveValues() {
 
 
 void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
-	
+
 	std::string gloveName = board->name();
-	m_peripherals[gloveName] = board; 
+	m_peripherals[gloveName] = board;
 
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
-	
+
 	GSdk::BoardTools::WearingPosition position;
 
 	////////////////////////////////
@@ -57,7 +57,7 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	}
 	else {
 		this->printError("Unknown glove detected: " + gloveName);
-		return; 
+		return;
 	}
 
 
@@ -65,9 +65,9 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	std::time_t t = std::time(nullptr);
 	std::tm* now = std::localtime(&t);
 	char filename[128];
-	
+
 	std::strftime(filename, sizeof(filename), (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove)
-		? "GloveLog_Left_%Y%m%d_%H%M%S.csv" : "GloveLog_Right_%Y%m%d_%H%M%S.csv",now);
+		? "GloveLog_Left_%Y%m%d_%H%M%S.csv" : "GloveLog_Right_%Y%m%d_%H%M%S.csv", now);
 
 	std::ofstream& logFile = m_logFiles[gloveName];
 	logFile.open(filename);
@@ -96,9 +96,12 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	//////
 
 	try {
-		
+
 
 		GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
+		std::cout << "ASSEMBLY TAGS COUNT for " << gloveName
+			<< " = " << assembly.tags().size() << std::endl;
 		auto tags = assembly.tags();
 
 		std::cout << " DETECTED sensors for " << gloveName << "( " << ((position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove) ? "LEFT " : "RIGHT ")
@@ -112,12 +115,12 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 		}
 
 	}
-	catch(...){
+	catch (...) {
 		this->printError("Failed to list sensors");
 	}
 
 
-	subscribe(gloveName , board);
+	subscribe(gloveName, board);
 
 	//ak je trieda ImuConfiguration tak volame citanie 
 	auto imuConfigPtr = dynamic_cast<ImuConfiguration*>(this);
@@ -128,8 +131,10 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 }
 
 void GloveValues::onPeripheralDisconnected() {
+	
 	this->printInfo("GloveValues: Peripheral disconnected ... unsubscribing ...");
 	unsubscribe();
+
 }
 
 
@@ -144,7 +149,7 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 	switch (m_calibrationState)
 	{
-	
+
 	case CalibrationState::CalibratingLeftOpen:
 
 		m_calibrationManager.setOpenHand("Left", rawleft);
@@ -176,7 +181,7 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 		m_calibrationManager.saveToCSV("Right");
 		m_calibrationState = CalibrationState::Done;
 		break;
-	
+
 	case CalibrationState::Done:
 		printInfo("[Calibration] Saved/finished calibration files.");
 		break;
@@ -187,11 +192,72 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, co
 
 }
 
+void GloveValues::logRawToCSV(
+	const std::string& gloveName,
+	const std::vector<uint8_t>& values,
+	GSdk::BoardTools::WearingPosition position)
+{
+	auto it = m_rawLogFiles.find(gloveName);
+	if (it == m_rawLogFiles.end() || !it->second.is_open())
+		return;
 
+	std::ofstream& rawFile = it->second;
+
+	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
+
+	// ----- Ã¨as -----
+	auto now = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+		now.time_since_epoch()) % 1000;
+
+	std::time_t t = std::chrono::system_clock::to_time_t(now);
+	std::tm tm{};
+	localtime_s(&tm, &t);
+
+	char timeStr[32];
+	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
+
+	// ----- hlaviÃ¨ka -----
+	if (!m_rawHeaderWritten[gloveName]) {
+		rawFile << "Timestamp_";
+
+		for (int tag : assembly.tags()) {
+			if (m_logOnlyBending && (tag % 2 == 0))
+				continue;
+
+			const auto& sensor = GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
+			rawFile << ";" << sensor.name();
+		}
+
+		rawFile << "\n";
+		m_rawHeaderWritten[gloveName] = true;
+	}
+
+	// ----- hodnoty -----
+	rawFile << timeStr << "." << std::setw(3) << std::setfill('0') << ms.count();
+
+	for (int tag : assembly.tags()) {
+		if (m_logOnlyBending && (tag % 2 == 0))
+			continue;
+
+		int index = assembly.findIndex(tag) * 4;
+		float val = 0.0f;
+
+		if (index >= 0 && index + 3 < values.size()) {
+			std::memcpy(&val, &values[index], sizeof(float));
+		}
+
+		rawFile << ";" << val;
+	}
+
+
+	rawFile << "\n";
+	rawFile.flush();
+}
 
 
 void GloveValues::handleLeftGesture(const std::string& gesture) {
-	
+
 	if (!m_leftHandEnabled) {
 		return;
 	}
@@ -201,8 +267,8 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 		this->printInfo("[EMERGENCY][LEFT] STOP / RESUME");
 		return;
 	}
-	
-	
+
+
 	// JEDNOTLIVE MODY
 	if (gesture == "Left_XYZ_Mode") {
 		m_currentMode = ControlMode::XYZ;
@@ -269,11 +335,11 @@ bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 	if (gesture == "Lock_Unlock") {
 		return true;
 	}
-	
+
 	//ak nic tak nic nepovol
 	auto it = m_allowedRightGesture.find(m_currentMode);
 	if (it == m_allowedRightGesture.end()) {
-		return false;	
+		return false;
 	}
 	//povolene gesta pre aktualny mod3
 
@@ -282,77 +348,14 @@ bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 
 }
 
-void GloveValues::logRawToCSV(
-	const std::string& gloveName,
-	const std::vector<uint8_t>& values,
-	GSdk::BoardTools::WearingPosition position)
-{
-	auto it = m_rawLogFiles.find(gloveName);
-	if (it == m_rawLogFiles.end() || !it->second.is_open())
-		return;
 
-	std::ofstream& rawFile = it->second;
-
-	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
-
-	// ----- CAS -----
-	auto now = std::chrono::system_clock::now();
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-		now.time_since_epoch()) % 1000;
-
-	std::time_t t = std::chrono::system_clock::to_time_t(now);
-	std::tm tm{};
-	localtime_s(&tm, &t);
-
-	char timeStr[32];
-	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
-
-	// ----- hlavicka -----
-	if (!m_rawHeaderWritten[gloveName]) {
-		rawFile << "Timestamp_" << gloveName;
-
-		for (int tag : assembly.tags()) {
-			if (m_logOnlyBending && (tag % 2 == 0))
-				continue;
-
-			const auto& sensor =
-				GSdk::BoardTools::ExternalSensor::registeredSensor(tag);
-			rawFile << ";" << sensor.name();
-		}
-
-		rawFile << "\n";
-		m_rawHeaderWritten[gloveName] = true;
-	}
-
-	// ----- hodnoty -----
-	rawFile << timeStr << "." << std::setw(3)
-		<< std::setfill('0') << ms.count();
-
-	for (int tag : assembly.tags()) {
-		if (m_logOnlyBending && (tag % 2 == 0))
-			continue;
-
-		int index = assembly.findIndex(tag) * 4;
-		float val = 0.0f;
-
-		if (index >= 0 && index + 3 < values.size()) {
-			std::memcpy(&val, &values[index], sizeof(float));
-		}
-
-		rawFile << ";" << val;
-	}
-
-	rawFile << "\n";
-	rawFile.flush();
-
-}
 
 
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
 
 	// ------------------------------------------------------------
-		// kontrola log súboru
+		// kontrola log sÃºboru
 		// ------------------------------------------------------------
 	auto it = m_logFiles.find(gloveName);
 	if (it == m_logFiles.end() || !it->second.is_open())
@@ -361,7 +364,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	std::ofstream& logFile = it->second;
 
 	// ------------------------------------------------------------
-	// urèenie ruky
+	// urÃ¨enie ruky
 	// ------------------------------------------------------------
 	const bool isLeft =
 		(position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove);
@@ -371,7 +374,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
 
 	// ------------------------------------------------------------
-	// èasová znaèka
+	// Ã¨asovÃ¡ znaÃ¨ka
 	// ------------------------------------------------------------
 	auto now = std::chrono::system_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -388,7 +391,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	timestamp << TIMEstr << "." << std::setfill('0') << std::setw(3) << ms.count();
 
 	// ------------------------------------------------------------
-	// hlavièka CSV
+	// hlaviÃ¨ka CSV
 	// ------------------------------------------------------------
 	if (!m_headerWritten[gloveName]) {
 		logFile << "Timestamp_" << gloveName;
@@ -415,7 +418,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	std::copy_n(rawValues.begin(), 5, fingerRaw.begin());
 
 	// ------------------------------------------------------------
-	// KALIBRÁCIA – VŽDY z fingerRaw (HW poradie!)
+	// KALIBRÃCIA Â– VÂŽDY z fingerRaw (HW poradie!)
 	// ------------------------------------------------------------
 	if (m_calibrationManager.m_isCalibrating) {
 
@@ -423,7 +426,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 		if (isLeft)
 			m_lastRawLeft = fingerRaw;
-		else
+		else 
 			m_lastRawRight = fingerRaw;
 
 		logFile << timestamp.str();
@@ -434,17 +437,17 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 		return;
 	}
 
-	if (!m_calibrationManager.isCalibrated(sideKEY))
+	if (!m_calibrationManager.isCalibrated(sideKEY)) {
 		return;
-
+	}
 	// ------------------------------------------------------------
-	// NORMALIZÁCIA POD¼A KALIBRÁCIE (stále HW poradie)
+	// NORMALIZÃCIA PODÂ¼A KALIBRÃCIE (stÃ¡le HW poradie)
 	// ------------------------------------------------------------
 	auto normalizedValues =
 		m_calibrationManager.normalize(sideKEY, fingerRaw);
 
 	// ------------------------------------------------------------
-	// LOG normalizovaných hodnôt (HW poradie)
+	// LOG normalizovanÃ½ch hodnÃ´t (HW poradie)
 	// ------------------------------------------------------------
 	logFile << timestamp.str();
 	for (float v : normalizedValues)
@@ -453,12 +456,12 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	logFile.flush();
 
 	// ------------------------------------------------------------
-	// MAPOVANIE PRSTOV – LEN PRE GESTÁ
+	// MAPOVANIE PRSTOV Â– LEN PRE GESTÃ
 	// ------------------------------------------------------------
 	std::array<float, 5> gestureValues{};
 
 	if (isLeft) {
-		// ¾avá ruka – prehodené poradie
+		// Â¾avÃ¡ ruka Â– prehodenÃ© poradie
 		gestureValues[0] = normalizedValues[4]; // thumb
 		gestureValues[1] = normalizedValues[3]; // index
 		gestureValues[2] = normalizedValues[2]; // middle
@@ -466,15 +469,15 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 		gestureValues[4] = normalizedValues[0]; // pinky
 	}
 	else {
-		// pravá ruka – rovnaké poradie
+		// pravÃ¡ ruka Â– rovnakÃ© poradie
 		gestureValues = normalizedValues;
 	}
 
 	// ------------------------------------------------------------
-	// ROZPOZNÁVANIE GEST
+	// ROZPOZNÃVANIE GEST
 	// ------------------------------------------------------------
 
-	// PRAVÁ RUKA – lock/unlock
+	// PRAVÃ RUKA Â– lock/unlock
 	if (isLeft) {
 		if (!m_leftHandEnabled) {
 			return;
@@ -488,13 +491,13 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 		if (auto Right_gesture = m_rightGestureRecognizer.recognize(gestureValues)) {
 			handleRightGesture(*Right_gesture);
 		}
-	
+
 
 	}
 
 }
 
-std::array<float,5> GloveValues::getNormalizedFingerValues(const std::vector<uint8_t>& values,GSdk::BoardTools::ExternalSensorAssembly assembly) {
+std::array<float, 5> GloveValues::getNormalizedFingerValues(const std::vector<uint8_t>& values, GSdk::BoardTools::ExternalSensorAssembly assembly) {
 
 	std::array<float, 5> fingerValues = { 0.0f,0.0f ,0.0f ,0.0f ,0.0f };
 	size_t count = 0;
@@ -505,16 +508,16 @@ std::array<float,5> GloveValues::getNormalizedFingerValues(const std::vector<uin
 		}
 		int index = assembly.findIndex(tag) * 4;
 		float val = 0.0f;
-		
+
 		if (index >= 0 && index + 3 < values.size()) {
 			std::memcpy(&val, &values[index], sizeof(float));
-			
+
 		}
 
 		fingerValues[count] = val;
 		count++;
 		if (count >= 5) break;
-			
+
 	}
 	return fingerValues;
 }
@@ -524,9 +527,9 @@ std::array<float,5> GloveValues::getNormalizedFingerValues(const std::vector<uin
 
 
 void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
+
 	
-	
-	
+
 	//viac pozri StreamTimeslots.h
 	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
 	streamTimeslots.sensorsState = 6; //6 alebo GSdkBoardStreamTypeSensorsState; //data o senzore prstov( data represents conductivity)
@@ -536,18 +539,19 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 	*/
 
 	if (!board->streamTimeslots().write(streamTimeslots)) {
-		this->printError("[ "+ gloveName + " ]"+ "Unable to set stream timeslots");
+		this->printError("[ " + gloveName + " ]" + "Unable to set stream timeslots");
 		return;
 	}
-	
+
 	GSdk::BoardTools::WearingPosition position =
-		( gloveName.find("4305") != std::string::npos)
+		(gloveName.find("4305") != std::string::npos)
 		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
 		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 
-	int streamID = board->streamReceived().connect([this,gloveName,position](const GSdk::Board::BoardStreamEventArgs& args) {
+	int streamID = board->streamReceived().connect([this, gloveName, position](const GSdk::Board::BoardStreamEventArgs& args) {
 		//GSdkBoardStreamTypeTaredAltitude -> brief Relative altitude from taring point, meters
-		if (args.streamType == GSdkBoardStreamTypeSensorsState){
+	
+		if (args.streamType == GSdkBoardStreamTypeSensorsState) {
 			auto value = args.bytes();
 
 
@@ -563,7 +567,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 
 			//this->printInfo("[ "+ gloveName + " ]" + "Received sensorsState data (" + std::to_string(value.size()) + " bytes)");
 			logRawToCSV(gloveName, value, position);
-			logToCSV(gloveName, value,position);
+			logToCSV(gloveName, value, position);
 
 		}
 
@@ -573,9 +577,9 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 			auto quatV = quatArgs.value();
 			this->printInfo("Received tared quaternion " + getString(quatV));
 		}
-	});
+		});
 
-
+	
 	m_streamIDs[gloveName] = streamID;
 
 }
@@ -583,7 +587,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 
 void GloveValues::unsubscribe() {
 
-	for(auto & [gloveName, board] : m_peripherals) {
+	for (auto& [gloveName, board] : m_peripherals) {
 		if (board) {
 			auto it = m_streamIDs.find(gloveName);
 			if (it != m_streamIDs.end()) {
@@ -595,5 +599,3 @@ void GloveValues::unsubscribe() {
 	m_peripherals.clear();
 
 }
-
-

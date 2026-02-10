@@ -145,6 +145,7 @@
     <ClInclude Include="CalibrationManager.hpp" />
     <ClInclude Include="CalibrationState.hpp" />
     <ClInclude Include="ControlMode.hpp" />
+    <ClInclude Include="Finger.hpp" />
     <ClInclude Include="Gesture.hpp" />
     <ClInclude Include="GestureLibrary.hpp" />
     <ClInclude Include="GestureRecognizer.hpp" />

@@ -78,6 +78,7 @@ void GloveConnection::disconnect() {
 	}
 
 	if (m_central) {
+
 		m_peripheral->stop();
 
 		//zavolanie hooku pri odpojeni

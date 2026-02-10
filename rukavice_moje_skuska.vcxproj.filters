@@ -68,5 +68,8 @@
     <ClInclude Include="ControlMode.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Finger.hpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
