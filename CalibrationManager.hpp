@@ -32,18 +32,16 @@ public:
 
 
 	//uklada hodnoty pre otvorenu ruku (kalibracia)
-	void setOpenHand(const std::string& gloveName, const std::array<float, 5>& values) {
+	void setOpenHand(const std::string& gloveName,
+		const std::array<float, 5>& values)
+	{
 		auto& d = data[gloveName];
 
 		for (int i = 0; i < 5; i++) {
-			d.open[i] = d.maxValues[i];
+			d.open[i] = values[i];
 		}
-		d.openedSet = true;
 
-		// OPEN = maximum (1.0)
-		for (int i = 0; i < 5; i++) {
-			d.maxValues[i] = std::max(d.maxValues[i], values[i]);
-		}
+		d.openedSet = true;
 	}
 
 	//uklada hodnoty pre zatvorenu ruku (kalibracia)
@@ -51,13 +49,11 @@ public:
 		auto& d = data[gloveName];
 
 		for (int i = 0; i < 5; i++) {
-			d.fist[i] = d.minValues[i];
+			d.fist[i] = values[i];
 		}
 		d.fistSet = true;
 		// FIST = minimum (0.0)
-		for (int i = 0; i < 5; i++) {
-			d.minValues[i] = std::min(d.minValues[i], values[i]);
-		}
+		
 	}
 
 	//kotrola ci je kalibracia kompletna
@@ -121,7 +117,7 @@ public:
 
 		std::ifstream file("calibration_" + gloveName + ".csv");
 		if (!file.is_open()) {
-			std::cout<< "[Calibration] NO CSV for " << gloveName << ", skipping\n";
+			std::cout << "[Calibration] NO CSV for " << gloveName << ", skipping\n";
 			return;
 
 		}
@@ -173,6 +169,5 @@ public:
 
 
 #endif // !CALIBRATIONMANAGER_HPP
-
 
 

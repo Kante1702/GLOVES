@@ -30,6 +30,9 @@
     <ClCompile Include="ImuConfiguration.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RobotClient.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GloveConnection.hpp">
@@ -68,7 +71,7 @@
     <ClInclude Include="ControlMode.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Finger.hpp">
+    <ClInclude Include="RobotClient.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,7 @@
 #include "GloveConnection.hpp"
 #include "HandType.hpp"
 #include "ControlMode.hpp"
+#include "RobotClient.hpp"
 #include <map>
 #include <unordered_set>
 #include <fstream>
@@ -57,6 +58,9 @@ class GloveValues : public GloveConnection {
 	std::array<float, 5> m_lastNormalizedLeft{};
 	std::array<float, 5> m_lastNormalizedRight{};
 
+	//pripojenie rukavice s robotom
+	std::unique_ptr<RobotClient> m_RobotClient;
+	std::string gesturesToCommand(const std::string& gesture);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	// GLOBAL (SAFETY) GESTURE

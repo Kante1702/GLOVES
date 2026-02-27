@@ -14,6 +14,16 @@ GloveValues::GloveValues() : GloveConnection() {
 	std::tm* now = std::localtime(&t); //rozdeli to na dni, hodiny ...
 
 
+	//inicializacia spojenia
+	m_RobotClient = std::make_unique<RobotClient>("127.0.0.1", 10001);
+	if (m_RobotClient->connectToRobot()) {
+		this->printInfo("[TCP] Connected to robot server");
+	}
+	else {
+		printError("TCP Failed to connect to robot");
+	}
+
+
 }
 
 GloveValues::~GloveValues() {
@@ -29,6 +39,28 @@ GloveValues::~GloveValues() {
 	}
 
 
+}
+
+
+std::string GloveValues::gesturesToCommand(const std::string& gesture) {
+
+	if (gesture == "Right_X") return "MOVE_X";
+	if (gesture == "Right_Y") return "MOVE_Y";
+	if (gesture == "Right_Z") return "MOVE_Z";
+	if (gesture == "Right_Yaw") return "ROT_YAW";
+	if (gesture == "Right_Pitch") return "ROT_PITCH";
+	if (gesture == "Right_Roll") return "ROT_ROLL";
+	if (gesture == "Right_Custom_Mode") return "CUSTOM";
+	if (gesture == "Right_Stop_Resume") return "STOP";
+	if (gesture == "Left_XYZ_Mode") return "XYZ_MODE";
+	if (gesture == "Left_Rotation_Mode") return "ROT_MODE";
+	if (gesture == "Left_Custom_Mode") return "CUSTOM_MODE";
+	if (gesture == "Left_Service_Mode") return "SERVICE_MODE";
+	if (gesture == "Left_Positive_Direction") return "POS_DIREC";
+	if (gesture == "Left_Negative_Direction") return "NEG_DIREC";
+	if (gesture == "Left_Stop_Resume") return "STOP";
+
+	return "";
 }
 
 
@@ -265,6 +297,13 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 	// BEZPECNOSTNE GESTA
 	if (gesture == "Left_Stop_Resume") {
 		this->printInfo("[EMERGENCY][LEFT] STOP / RESUME");
+		if (m_RobotClient) {
+			std::string command = gesturesToCommand(gesture);
+			if (!command.empty())
+			{
+				m_RobotClient->sendCommand(command +"\n");
+			}
+		}
 		return;
 	}
 
@@ -297,6 +336,15 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 		this->printInfo("[LEFT] Negative direction");
 	}
 
+	if (m_RobotClient) {
+
+		std::string command = gesturesToCommand(gesture);
+		if (!command.empty()) {
+
+			m_RobotClient->sendCommand(command + "\n");
+		}
+	}
+
 }
 
 
@@ -311,15 +359,29 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 	//Bezpecnostne
 	if (gesture == "Right_Stop_Resume") {
 		this->printInfo("[EMERGENCY][RIGHT] STOP / RESUME");
+		if (m_RobotClient) {
+			std::string command = gesturesToCommand(gesture);
+			if (!command.empty()) {
+				m_RobotClient->sendCommand(command+"\n");
+			}
+		}
+
 		return;
 	}
-
+	
 	//Filtrovanie podla modu
 	if (!isRightGestureAllowed(gesture)) {
 		return;
 	}
 	this->printInfo("[RIGHT][" + std::to_string((int)m_currentMode) + "] " + gesture);
 
+	if (m_RobotClient) {
+
+		std::string command = gesturesToCommand(gesture);
+		if (!command.empty()) {
+			m_RobotClient->sendCommand(command+"\n");
+		}
+	}
 
 
 }

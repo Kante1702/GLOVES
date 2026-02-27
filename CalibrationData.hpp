@@ -25,8 +25,8 @@ struct CalibrationData {
 	//ukladanie raw pocas kalibracie 
 	void update(const std::array<float, 5>& raw) {
 		for (size_t i = 0; i < 5; i++) {
-			minValues[i] = std::min(minValues[i], raw[i]);
-			maxValues[i] = std::max(maxValues[i], raw[i]);
+			minValues[i] = (std::min)(minValues[i], raw[i]);
+			maxValues[i] = (std::max)(maxValues[i], raw[i]);
 		}
 	}
 
@@ -43,7 +43,7 @@ struct CalibrationData {
 		norma = std::clamp(norma, 0.0f, 1.0f);
 
 		if (norma < 0.3f)
-			norma = 0.0f;
+		norma = 0.0f;
 
 		return norma;
 

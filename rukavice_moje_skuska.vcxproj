@@ -139,13 +139,13 @@
     <ClCompile Include="LoggerBase.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="GloveConnection.cpp" />
+    <ClCompile Include="RobotClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CalibrationData.hpp" />
     <ClInclude Include="CalibrationManager.hpp" />
     <ClInclude Include="CalibrationState.hpp" />
     <ClInclude Include="ControlMode.hpp" />
-    <ClInclude Include="Finger.hpp" />
     <ClInclude Include="Gesture.hpp" />
     <ClInclude Include="GestureLibrary.hpp" />
     <ClInclude Include="GestureRecognizer.hpp" />
@@ -154,6 +154,7 @@
     <ClInclude Include="HandType.hpp" />
     <ClInclude Include="ImuConfiguration.hpp" />
     <ClInclude Include="LoggerBase.hpp" />
+    <ClInclude Include="RobotClient.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
