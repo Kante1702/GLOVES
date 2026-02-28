@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS 
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include "GloveValues.hpp"
 #include "ImuConfiguration.hpp"
 #include <iomanip> //formatovany cas
@@ -33,11 +33,12 @@ GloveValues::~GloveValues() {
 		}
 	}
 
-	//pre ochranu aj tu je unsubscribe
-	if (!m_streamIDs.empty()) {
-		unsubscribe();
+	for (auto& [name, file] : m_rawLogFiles) {
+		if (file.is_open()) {
+			file.close();
+		}
 	}
-
+	
 
 }
 
@@ -163,12 +164,40 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 }
 
 void GloveValues::onPeripheralDisconnected() {
-	
+
 	this->printInfo("GloveValues: Peripheral disconnected ... unsubscribing ...");
-	unsubscribe();
+
+	// Pre každú rukavicu, ktorú si registroval
+	for (auto& [name, board] : m_peripherals) {
+		if (board) {
+			// A) Zastav streamovanie v rukavici (toto uvoľní Bluetooth kanál!)
+			auto empty = GSdk::Board::getEmptyStreamTimeslots();
+			board->streamTimeslots().write(empty);
+
+			// B) Odpoj callback
+			if (m_streamIDs.count(name)) {
+				board->streamReceived().disconnect(m_streamIDs[name]);
+			}
+		}
+	}
+
+	// C) Vyčisti mapy a zatvor súbory
+	m_streamIDs.clear();
+	for (auto& [name, file] : m_logFiles) {
+		if (file.is_open()) file.close();
+	}
+	for (auto& [name, file] : m_rawLogFiles) {
+		if (file.is_open()) file.close();
+	}
 
 }
 
+void GloveValues::disconnect() {
+	
+	this->onPeripheralDisconnected();
+
+	GloveConnection::disconnect();
+}
 
 void GloveValues::startCalibrating() {
 	m_calibrationManager.startCalibration();
@@ -301,7 +330,7 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty())
 			{
-				m_RobotClient->sendCommand(command +"\n");
+				m_RobotClient->sendCommand(command + "\n");
 			}
 		}
 		return;
@@ -362,13 +391,13 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 		if (m_RobotClient) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty()) {
-				m_RobotClient->sendCommand(command+"\n");
+				m_RobotClient->sendCommand(command + "\n");
 			}
 		}
 
 		return;
 	}
-	
+
 	//Filtrovanie podla modu
 	if (!isRightGestureAllowed(gesture)) {
 		return;
@@ -379,7 +408,7 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 
 		std::string command = gesturesToCommand(gesture);
 		if (!command.empty()) {
-			m_RobotClient->sendCommand(command+"\n");
+			m_RobotClient->sendCommand(command + "\n");
 		}
 	}
 
@@ -488,7 +517,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 		if (isLeft)
 			m_lastRawLeft = fingerRaw;
-		else 
+		else
 			m_lastRawRight = fingerRaw;
 
 		logFile << timestamp.str();
@@ -590,7 +619,7 @@ std::array<float, 5> GloveValues::getNormalizedFingerValues(const std::vector<ui
 
 void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 
-	
+
 
 	//viac pozri StreamTimeslots.h
 	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
@@ -612,7 +641,7 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 
 	int streamID = board->streamReceived().connect([this, gloveName, position](const GSdk::Board::BoardStreamEventArgs& args) {
 		//GSdkBoardStreamTypeTaredAltitude -> brief Relative altitude from taring point, meters
-	
+
 		if (args.streamType == GSdkBoardStreamTypeSensorsState) {
 			auto value = args.bytes();
 
@@ -641,23 +670,8 @@ void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::
 		}
 		});
 
-	
+
 	m_streamIDs[gloveName] = streamID;
 
 }
 
-
-void GloveValues::unsubscribe() {
-
-	for (auto& [gloveName, board] : m_peripherals) {
-		if (board) {
-			auto it = m_streamIDs.find(gloveName);
-			if (it != m_streamIDs.end()) {
-				board->streamReceived().disconnect(it->second);
-			}
-		}
-	}
-	m_streamIDs.clear();
-	m_peripherals.clear();
-
-}

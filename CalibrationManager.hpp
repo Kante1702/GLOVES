@@ -1,3 +1,4 @@
+
 #pragma once
 #ifndef CALIBRATIONMANAGER_HPP
 #define CALIBRATIONMANAGER_HPP
@@ -53,7 +54,7 @@ public:
 		}
 		d.fistSet = true;
 		// FIST = minimum (0.0)
-		
+
 	}
 
 	//kotrola ci je kalibracia kompletna
@@ -169,5 +170,3 @@ public:
 
 
 #endif // !CALIBRATIONMANAGER_HPP
-
-

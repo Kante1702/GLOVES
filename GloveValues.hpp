@@ -1,3 +1,4 @@
+
 #pragma once
 
 #ifndef GLOVEVALUES_HPP
@@ -22,7 +23,7 @@
 class GloveValues : public GloveConnection {
 
 	void subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board);
-	void unsubscribe();
+	
 
 	std::map<std::string, int> m_streamIDs; // name -> streamID
 	bool m_streamConnected = false;
@@ -57,6 +58,8 @@ class GloveValues : public GloveConnection {
 	std::string m_rightGloveName;
 	std::array<float, 5> m_lastNormalizedLeft{};
 	std::array<float, 5> m_lastNormalizedRight{};
+
+	
 
 	//pripojenie rukavice s robotom
 	std::unique_ptr<RobotClient> m_RobotClient;
@@ -104,6 +107,7 @@ public:
 	std::array<float, 5> m_lastRawLeft{};
 	std::array<float, 5> m_lastRawRight{};
 	CalibrationManager m_calibrationManager;
+	virtual void disconnect() override;
 protected:
 
 	std::map<std::string, std::shared_ptr<GSdk::Board::BoardPeripheral>> m_peripherals;

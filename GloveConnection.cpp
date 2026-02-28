@@ -1,5 +1,6 @@
 #include "GloveConnection.hpp"
-
+#include <conio.h>
+#include <thread>
 
 using namespace GSdk;
 
@@ -77,13 +78,15 @@ void GloveConnection::disconnect() {
 		m_central->stopScan();
 	}
 
-	if (m_central) {
-
-		m_peripheral->stop();
-
-		//zavolanie hooku pri odpojeni
+	if (m_peripheral) {
+		
 		onPeripheralDisconnected();
 
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+		// 3. AŽ POTOM zastav perifériu
+		m_peripheral->stop();
 		m_peripheral.reset();
 	}
 
@@ -96,6 +99,7 @@ void GloveConnection::disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> b
 
 	//dolezite len prstove data
 	modes.fingers = true;
+
 
 	//ostatne pre istotu nastavime na false
 	modes.acceleration = false;
