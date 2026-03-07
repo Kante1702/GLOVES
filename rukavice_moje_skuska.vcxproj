@@ -123,6 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Include;D:\VYSKA\BAKALARKA\CaptoGlove\CaptoGlove\capto_glove_sdk\glove_SDK\Example\Examples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,12 +135,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CalibrationData.cpp" />
+    <ClCompile Include="CalibrationManager.cpp" />
     <ClCompile Include="GloveValues.cpp" />
     <ClCompile Include="ImuConfiguration.cpp" />
     <ClCompile Include="LoggerBase.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="GloveConnection.cpp" />
-    <ClCompile Include="RobotClient.cpp" />
+    <ClCompile Include="RobotCommunicationServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CalibrationData.hpp" />
@@ -147,6 +150,7 @@
     <ClInclude Include="CalibrationState.hpp" />
     <ClInclude Include="ControlMode.hpp" />
     <ClInclude Include="Gesture.hpp" />
+    <ClInclude Include="GestureExperiment.hpp" />
     <ClInclude Include="GestureLibrary.hpp" />
     <ClInclude Include="GestureRecognizer.hpp" />
     <ClInclude Include="GloveConnection.hpp" />
@@ -154,7 +158,7 @@
     <ClInclude Include="HandType.hpp" />
     <ClInclude Include="ImuConfiguration.hpp" />
     <ClInclude Include="LoggerBase.hpp" />
-    <ClInclude Include="RobotClient.hpp" />
+    <ClInclude Include="RobotCommunicationServer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

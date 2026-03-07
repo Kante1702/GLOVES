@@ -15,12 +15,16 @@ GloveValues::GloveValues() : GloveConnection() {
 
 
 	//inicializacia spojenia
-	m_RobotClient = std::make_unique<RobotClient>("127.0.0.1", 10001);
-	if (m_RobotClient->connectToRobot()) {
-		this->printInfo("[TCP] Connected to robot server");
+	loadConfig("config.txt");
+
+
+	m_robotServer = std::make_unique<RobotCommunicationServer>(m_robotPort);
+	if (m_robotServer->startServer()) {
+		this->printInfo("[TCP] Server started on port "+ std::to_string(m_robotPort));
 	}
-	else {
-		printError("TCP Failed to connect to robot");
+	
+	if (m_robotServer->waitForRobot()) {
+		this->printInfo("[TCP] Robot connected");
 	}
 
 
@@ -38,29 +42,71 @@ GloveValues::~GloveValues() {
 			file.close();
 		}
 	}
+	if (m_robotServer) {
+		m_robotServer->stopServer();
+	}
+}
+
+void GloveValues::loadConfig(const std::string& filename) {
+
+	std::ifstream file(filename);
+	std::string line;
+
+	//predvolene hodnoty ak by subor chybal 
 	
 
+	m_robotPort = 10001;
+	m_leftGloveIdStr = "4305";
+	m_rightGloveIdStr = "4272";
+	
+
+	if (file.is_open()) {
+		while (std::getline(file, line)) {
+			std::istringstream is_line(line);
+			std::string key;
+			if (std::getline(is_line, key, '=')) {
+				std::string value;
+				if (std::getline(is_line, value)) {
+					if (key == "Robot_Port") {
+						m_robotPort = std::stoi(value);
+					}
+					else if (key == "LeftGlove_ID") {
+						m_leftGloveIdStr = value;
+					}
+					else if (key == "RightGlove_ID") {
+						m_rightGloveIdStr = value;
+					}
+				}
+			}
+
+		}
+		file.close();
+		this->printInfo("Config loaded from " + filename);
+	}
+	else {
+		this->printInfo("Config file not found, using defaults");
+	}
 }
 
 
 std::string GloveValues::gesturesToCommand(const std::string& gesture) {
 
-	if (gesture == "Right_X") return "MOVE_X";
-	if (gesture == "Right_Y") return "MOVE_Y";
-	if (gesture == "Right_Z") return "MOVE_Z";
-	if (gesture == "Right_Yaw") return "ROT_YAW";
-	if (gesture == "Right_Pitch") return "ROT_PITCH";
-	if (gesture == "Right_Roll") return "ROT_ROLL";
-	if (gesture == "Right_Custom_Mode") return "CUSTOM";
-	if (gesture == "Right_Stop_Resume") return "STOP";
-	if (gesture == "Left_XYZ_Mode") return "XYZ_MODE";
-	if (gesture == "Left_Rotation_Mode") return "ROT_MODE";
-	if (gesture == "Left_Custom_Mode") return "CUSTOM_MODE";
-	if (gesture == "Left_Service_Mode") return "SERVICE_MODE";
-	if (gesture == "Left_Positive_Direction") return "POS_DIREC";
-	if (gesture == "Left_Negative_Direction") return "NEG_DIREC";
-	if (gesture == "Left_Stop_Resume") return "STOP";
-
+	if (gesture == "Right_X") return "110";
+	if (gesture == "Right_Y") return "111";
+	if (gesture == "Right_Z") return "112";
+	if (gesture == "Right_Yaw") return "120";
+	if (gesture == "Right_Pitch") return "121";
+	if (gesture == "Right_Roll") return "122";
+	if (gesture == "Right_RobotDisconnect") return "130";
+	if (gesture == "Right_Custom_Mode") return "131";
+	if (gesture == "Right_Stop_Resume") return "101";
+	if (gesture == "Left_XYZ_Mode") return "240";
+	if (gesture == "Left_Rotation_Mode") return "241";
+	if (gesture == "Left_Custom_Mode") return "242";
+	if (gesture == "Left_Service_Mode") return "243";
+	if (gesture == "Left_Positive_Direction") return "250";
+	if (gesture == "Left_Negative_Direction") return "251";
+	if (gesture == "Left_Stop_Resume") return "201";
 	return "";
 }
 
@@ -79,12 +125,13 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	////////////////////////////////
 	//urcenie podla id
 	//////////////
-	if (gloveName.find("4305") != std::string::npos) {
+	//LEFT =4305
+	if (gloveName.find(m_leftGloveIdStr) != std::string::npos) {
 		m_leftGloveName = gloveName;
 		position = GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove;
 	}
 	// RIGHT = 4272
-	else if (gloveName.find("4272") != std::string::npos) {
+	else if (gloveName.find(m_rightGloveIdStr) != std::string::npos) {
 		m_rightGloveName = gloveName;
 		position = GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 	}
@@ -206,51 +253,35 @@ void GloveValues::startCalibrating() {
 
 }
 
-void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft, const std::array<float, 5>& rawright) {
+void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft,const std::array<float, 5>& rawright)
+{
+	if (!m_calibrationManager.m_isCalibrating) return;
 
 	switch (m_calibrationState)
 	{
-
 	case CalibrationState::CalibratingLeftOpen:
-
-		m_calibrationManager.setOpenHand("Left", rawleft);
-		this->printInfo("[Calibration] LEFT OPEN stored. Make LEFT FIST!");
-		m_calibrationState = CalibrationState::CalibratingLeftFist;
+		this->printInfo("[Calibration] Collecting LEFT OPEN samples...");
+		m_collecting = true;
 		break;
 
 	case CalibrationState::CalibratingLeftFist:
-		m_calibrationManager.setFist("Left", rawleft);
-		this->printInfo("[Calibration] LEFT FIST stored. Put RIGHT hand fully OPEN.");
-		m_calibrationState = CalibrationState::CalibratingRightOpen;
+		this->printInfo("[Calibration] Collecting LEFT FIST samples...");
+		m_collecting = true;
 		break;
 
 	case CalibrationState::CalibratingRightOpen:
-
-		m_calibrationManager.setOpenHand("Right", rawright);
-		this->printInfo("[Calibration] RIGHT OPEN stored. Make RIGHT FIST!");
-		m_calibrationState = CalibrationState::CalibratingRightFist;
+		this->printInfo("[Calibration] Collecting RIGHT OPEN samples...");
+		m_collecting = true;
 		break;
 
 	case CalibrationState::CalibratingRightFist:
-
-		m_calibrationManager.setFist("Right", rawright);
-		this->printInfo("[Calibration] RIGHT FIST stored. Calibration DONE!");
-
-		//dokoncenie
-		m_calibrationManager.finishCalibration();
-		m_calibrationManager.saveToCSV("Left");
-		m_calibrationManager.saveToCSV("Right");
-		m_calibrationState = CalibrationState::Done;
+		this->printInfo("[Calibration] Collecting RIGHT FIST samples...");
+		m_collecting = true;
 		break;
 
-	case CalibrationState::Done:
-		printInfo("[Calibration] Saved/finished calibration files.");
-		break;
 	default:
 		break;
 	}
-
-
 }
 
 void GloveValues::logRawToCSV(
@@ -326,14 +357,24 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 	// BEZPECNOSTNE GESTA
 	if (gesture == "Left_Stop_Resume") {
 		this->printInfo("[EMERGENCY][LEFT] STOP / RESUME");
-		if (m_RobotClient) {
+		if (m_robotServer) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty())
 			{
-				m_RobotClient->sendCommand(command + "\n");
+				m_robotServer->sendCommand(command + "\n");
 			}
 		}
 		return;
+	}
+
+	if (gesture == "Gesto_4") {
+		this->printInfo("Gesto_4");
+	}
+	if (gesture == "Gesto_5") {
+		this->printInfo("Gesto_5");
+	}
+	if (gesture == "Gesto_6") {
+		this->printInfo("Gesto_6");
 	}
 
 
@@ -365,12 +406,12 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 		this->printInfo("[LEFT] Negative direction");
 	}
 
-	if (m_RobotClient) {
+	if (m_robotServer) {
 
 		std::string command = gesturesToCommand(gesture);
 		if (!command.empty()) {
 
-			m_RobotClient->sendCommand(command + "\n");
+			m_robotServer->sendCommand(command + "\n");
 		}
 	}
 
@@ -388,10 +429,10 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 	//Bezpecnostne
 	if (gesture == "Right_Stop_Resume") {
 		this->printInfo("[EMERGENCY][RIGHT] STOP / RESUME");
-		if (m_RobotClient) {
+		if (m_robotServer) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty()) {
-				m_RobotClient->sendCommand(command + "\n");
+				m_robotServer->sendCommand(command + "\n");
 			}
 		}
 
@@ -404,11 +445,11 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 	}
 	this->printInfo("[RIGHT][" + std::to_string((int)m_currentMode) + "] " + gesture);
 
-	if (m_RobotClient) {
+	if (m_robotServer) {
 
 		std::string command = gesturesToCommand(gesture);
 		if (!command.empty()) {
-			m_RobotClient->sendCommand(command + "\n");
+			m_robotServer->sendCommand(command + "\n");
 		}
 	}
 
@@ -423,7 +464,7 @@ bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 		return true;
 	}
 	//vzdy povolene
-	if (gesture == "Lock_Unlock") {
+	if (gesture == "Lock_Unlock" || gesture == "Gesto_1" || gesture == "Gesto_2" || gesture == "Gesto_3") {
 		return true;
 	}
 
@@ -511,24 +552,68 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	// ------------------------------------------------------------
 	// KALIBRÁCIA  VDY z fingerRaw (HW poradie!)
 	// ------------------------------------------------------------
-	if (m_calibrationManager.m_isCalibrating) {
+	if (m_calibrationManager.m_isCalibrating && m_collecting)
+	{
+		switch (m_calibrationState)
+		{
+		case CalibrationState::CalibratingLeftOpen:
+			if (isLeft)
+			{
+				if (m_calibrationManager.collectOpenSamples(sideKEY, fingerRaw))
+				{
+					std::cout << "Left open done\n";
+					this->printInfo("[Calibration] put LEFT hand fully CLOSED and press 's' or 'S' and WAIT");
+					m_collecting = false;
+					m_calibrationState = CalibrationState::CalibratingLeftFist;
+				}
+			}
+			break;
 
-		m_calibrationManager.updateRaw(sideKEY, fingerRaw);
+		case CalibrationState::CalibratingLeftFist:
+			if (isLeft)
+			{
+				if (m_calibrationManager.collectFistSamples(sideKEY, fingerRaw))
+				{
+					std::cout << "Left fist done\n";
+					this->printInfo("[Calibration] put Right hand fully OPEN and press 's' or 'S' and WAIT");
+					m_collecting = false;
+					m_calibrationState = CalibrationState::CalibratingRightOpen;
+				}
+			}
+			break;
 
-		if (isLeft)
-			m_lastRawLeft = fingerRaw;
-		else
-			m_lastRawRight = fingerRaw;
+		case CalibrationState::CalibratingRightOpen:
+			if (!isLeft)
+			{
+				if (m_calibrationManager.collectOpenSamples(sideKEY, fingerRaw))
+				{
+					std::cout << "Right open done\n";
+					this->printInfo("[Calibration] put RIGHT hand fully CLOSED and press 's' or 'S' and WAIT");
+					m_collecting = false;
+					m_calibrationState = CalibrationState::CalibratingRightFist;
+				}
+			}
+			break;
 
-		logFile << timestamp.str();
-		for (float f : fingerRaw)
-			logFile << ";" << f;
-		logFile << "\n";
-		logFile.flush();
-		return;
-	}
+		case CalibrationState::CalibratingRightFist:
+			if (!isLeft)
+			{
+				if (m_calibrationManager.collectFistSamples(sideKEY, fingerRaw))
+				{
+					
+					std::cout << "Right fist done\n";
+					m_calibrationManager.finishCalibration();
+					m_calibrationState = CalibrationState::Idle;
+					m_collecting = false;
+					std::cout << "Calibration finished\n";
+				}
+			}
+			break;
 
-	if (!m_calibrationManager.isCalibrated(sideKEY)) {
+		default:
+			break;
+		}
+
 		return;
 	}
 	// ------------------------------------------------------------
@@ -567,6 +652,10 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	// ------------------------------------------------------------
 	// ROZPOZNÁVANIE GEST
 	// ------------------------------------------------------------
+
+	if (m_calibrationManager.m_isCalibrating) {
+		return;
+	}
 
 	// PRAVÁ RUKA  lock/unlock
 	if (isLeft) {

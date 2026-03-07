@@ -1,0 +1,3 @@
+Robot_Port=10001
+LeftGlove_ID=4305
+RightGlove_ID=4272

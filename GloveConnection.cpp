@@ -37,7 +37,7 @@ bool GloveConnection::connect() {
 			auto board = std::dynamic_pointer_cast<Board::BoardPeripheral> (peripheral);
 			if (board) {
 
-				this->printInfo("============ TRYING TO CONNECT PERIPHERAL ============");
+				this->printInfo("\n============ TRYING TO CONNECT PERIPHERAL ============");
 				this->printInfo("Found device(ID): " + board->id());
 				this->printInfo("Name: "+ board->name());
 				m_peripheral = board;

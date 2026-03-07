@@ -23,7 +23,7 @@ int main() {
     std::cout << "\n=== OVLADANIE ===\n"
         "c  -> zacat kalibraciu\n"
         "s  -> ulozit krok\n"
-        "q  -> KONIEC PROGRAMU (bezpecne odpojenie)\n"
+        "q  -> KONIEC PROGRAMU \n"
         "----------------------\n";
 
     bool running = true;
@@ -31,14 +31,12 @@ int main() {
         if (_kbhit()) {
             char c = _getch();
             if (c == 'q' || c == 'Q') {
-                std::cout << "\nUkoncujem... Odpajam Bluetooth streamy..." << std::endl;
+                std::cout << "\nEnding... Disconnecting bluetooth streams..." << std::endl;
 
-                // 3. KLÚÈOVÝ KROK: 
-                // disconnect() teraz v sebe nesie onPeripheralDisconnected(),
-                // kde sa vypnu timesloty a odpoja streamy.
+                
                 glove.disconnect();
 
-                // Krátka pauza, aby Windows spracoval posledné Bluetooth príkazy
+                
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
                 running = false;
@@ -55,6 +53,6 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    std::cout << "Aplikacia uspesne ukoncena." << std::endl;
+    std::cout << "Application succesfully ended" << std::endl;
     return 0;
 }

@@ -30,7 +30,13 @@
     <ClCompile Include="ImuConfiguration.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RobotClient.cpp">
+    <ClCompile Include="CalibrationData.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CalibrationManager.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RobotCommunicationServer.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,7 +77,10 @@
     <ClInclude Include="ControlMode.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="RobotClient.hpp">
+    <ClInclude Include="RobotCommunicationServer.hpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GestureExperiment.hpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClInclude>
   </ItemGroup>
