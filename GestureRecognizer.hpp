@@ -18,11 +18,18 @@ class GestureRecognizer {
 
 	//uchovavanie start casu pre kazde gesto
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> gestureStartTime;
-
+	bool m_experimentMode = false;
 	
 
 
 public:
+	//experimet
+	void reset() {
+		gestureStartTime.clear();
+	}
+	void setExperimentMode(bool val) { m_experimentMode = val; };
+
+	//experiment
 	GestureRecognizer(HandType h) : hand(h) {}
 
 	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues ) {
@@ -30,7 +37,7 @@ public:
 
 		auto now = std::chrono::steady_clock::now();
 		auto gestures = library.getGesturesForHand(hand);
-
+		
 	
 
 
@@ -53,8 +60,9 @@ public:
 				else {
 
 					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - gestureStartTime[gesture.name]).count();
+					int holdMs = m_experimentMode ? 1 : gesture.holdTimeMs;
 
-					if (elapsed >= gesture.holdTimeMs) {
+					if (elapsed >= holdMs) {
 
 						gestureStartTime.erase(gesture.name);//reset po detekcii
 						return gesture.name;

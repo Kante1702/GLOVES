@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="CalibrationData.cpp" />
     <ClCompile Include="CalibrationManager.cpp" />
+    <ClCompile Include="GestureExperiment.cpp" />
     <ClCompile Include="GloveValues.cpp" />
     <ClCompile Include="ImuConfiguration.cpp" />
     <ClCompile Include="LoggerBase.cpp" />

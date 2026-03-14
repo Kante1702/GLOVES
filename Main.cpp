@@ -24,7 +24,9 @@ int main() {
         "c  -> zacat kalibraciu\n"
         "s  -> ulozit krok\n"
         "q  -> KONIEC PROGRAMU \n"
-        "----------------------\n";
+        "----------------------\n\n"
+        " ==== EXPERIMENT ====\n"
+        "e -> zacat experiment\n\n";
 
     bool running = true;
     while (running) {
@@ -44,12 +46,15 @@ int main() {
             else if (c == 'c' || c == 'C') {
                 glove.startCalibrating();
             }
+            else if (c == 'e' || c == 'E') {
+                glove.startExperiment();
+            }
             else if (c == 's' || c == 'S') {
                 glove.confirmCalibrationStep(glove.m_lastRawLeft, glove.m_lastRawRight);
             }
         }
 
-        // Šetríme procesor
+        // Setrenie procesora
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

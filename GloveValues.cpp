@@ -28,6 +28,42 @@ GloveValues::GloveValues() : GloveConnection() {
 	}
 
 
+
+	m_experiment.setGestures({
+	//pridane gesta
+	{"RIGHT","Gesto_1"},
+	{"RIGHT","Gesto_2"},
+	{"RIGHT","Gesto_3"},
+
+	{"LEFT","Gesto_4"},
+	{"LEFT","Gesto_5"},
+	{"LEFT","Gesto_6"},
+	
+	//povodne gesta na pravej ruke 
+	{"RIGHT","Lock_Unlock"},
+	{"RIGHT","Right_X"},
+	{"RIGHT","Right_Y"},
+	{"RIGHT","Right_Z"},
+	{"RIGHT","Right_Yaw"},
+	{"RIGHT","Right_Pitch"},
+	{"RIGHT","Right_Roll"},
+	{"RIGHT","Right_Custom_Mode"},
+	{"RIGHT","Right_RobotDisconnect"},
+	{"RIGHT","Right_Stop_Resume"},
+		
+	//povodne gesta na lavej ruke 
+		
+	{"LEFT","Left_XYZ_Mode"},
+	{"LEFT","Left_Rotation_Mode"},
+	{"LEFT","Left_Custom_Mode"},
+	{"LEFT","Left_Service_Mode" },
+	{"LEFT","Left_Positive_Direction"},
+	{"LEFT","Left_Negative_Direction"},
+	{"LEFT","Left_Stop_Resume" },
+	
+	});
+	
+
 }
 
 GloveValues::~GloveValues() {
@@ -252,6 +288,33 @@ void GloveValues::startCalibrating() {
 	this->printInfo("[Calibration] put LEFT hand fully OPEN and press 's' or 'S'");
 
 }
+
+void GloveValues::startExperiment() {
+
+	if (m_experiment.isRunning()) {
+		this->printInfo("[EXPERIMENT] Already running\n");
+		return;
+	}
+
+
+	if (!m_calibrationManager.isCalibrated("Left") || !m_calibrationManager.isCalibrated("Right")) {
+		this->printInfo("[Experiment] Calibration not done ... Please calibrate first");
+		return;
+	}
+	m_experimentMode = true;
+	this->printInfo("[Experiment] Experiment mode ON");
+	m_leftGestureRecognizer.setExperimentMode(true);
+	m_rightGestureRecognizer.setExperimentMode(true);
+	m_experiment.start();
+}
+
+//funkcia obnovujuca povodne casove okna inak pocas experimentu casove okna = 1ms
+void GloveValues::stopExperiment() {
+	m_experimentMode = false;
+	m_leftGestureRecognizer.setExperimentMode(false);
+	m_rightGestureRecognizer.setExperimentMode(false);
+}
+
 
 void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft,const std::array<float, 5>& rawright)
 {
@@ -486,6 +549,9 @@ bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 //kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
 
+
+	
+
 	// ------------------------------------------------------------
 		// kontrola log súboru
 		// ------------------------------------------------------------
@@ -663,6 +729,9 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 			return;
 		}
 
+		// POVODNE PRED EXPERIMENTOM
+		/*
+		*
 		if (auto Left_gesture = m_leftGestureRecognizer.recognize(gestureValues)) {
 			handleLeftGesture(*Left_gesture);
 		}
@@ -671,7 +740,40 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 		if (auto Right_gesture = m_rightGestureRecognizer.recognize(gestureValues)) {
 			handleRightGesture(*Right_gesture);
 		}
+		*/
 
+		if (auto Left_gesture = m_leftGestureRecognizer.recognize(gestureValues)) {
+			std::string gesture = *Left_gesture;
+			m_leftGestureRecognizer.reset();
+			if (m_experimentMode && m_experiment.isRunning()) {
+				m_experiment.processGesture("LEFT", gesture);
+				if (!m_experiment.isRunning()) {
+					stopExperiment();
+				}
+			}
+			else {
+				handleLeftGesture(gesture);
+			}
+		}
+	}
+	else {
+
+		if (auto Right_gesture = m_rightGestureRecognizer.recognize(gestureValues)) {
+			std::string gesture = *Right_gesture;
+			m_rightGestureRecognizer.reset();
+			if (m_experimentMode && m_experiment.isRunning()) {
+				m_experiment.processGesture("RIGHT", gesture);
+				if (!m_experiment.isRunning()) {
+					stopExperiment();
+				}
+			}
+			else {
+				handleRightGesture(gesture);
+			}
+
+		}
+
+		
 
 	}
 

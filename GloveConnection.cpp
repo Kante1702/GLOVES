@@ -98,7 +98,7 @@ void GloveConnection::disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> b
 	GSdk::Board::EmulationModes modes = GSdk::Board::getEmptyEmulationModes();
 
 	//dolezite len prstove data
-	modes.fingers = true;
+	modes.fingers = false;
 
 
 	//ostatne pre istotu nastavime na false
@@ -115,7 +115,7 @@ void GloveConnection::disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> b
 
 	
 
-	if (!board->emulationState().write(true)) {
+	if (!board->emulationState().write(false)) {
 		this->printError("Failed to enable emulation state");
 		return;
 	}

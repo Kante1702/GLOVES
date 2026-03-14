@@ -39,6 +39,9 @@
     <ClCompile Include="RobotCommunicationServer.cpp">
       <Filter>Resource Files\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GestureExperiment.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GloveConnection.hpp">

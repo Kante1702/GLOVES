@@ -4,6 +4,9 @@
 #ifndef GLOVEVALUES_HPP
 #define	GLOVEVALUES_HPP
 
+//experiment 
+#include "GestureExperiment.hpp"
+//
 #include "GloveConnection.hpp"
 #include "HandType.hpp"
 #include "ControlMode.hpp"
@@ -22,6 +25,13 @@
 
 
 class GloveValues : public GloveConnection {
+
+	//experiment
+	GestureExperiment m_experiment;	
+	bool m_experimentMode = false;
+	void stopExperiment();
+	///experimemnt
+
 
 	void subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board);
 
@@ -111,6 +121,7 @@ public:
 	~GloveValues();
 	void setOnlyBendingLog(bool value) { m_logOnlyBending = value; };
 	void startCalibrating();
+	void startExperiment();
 	void confirmCalibrationStep(const std::array<float, 5>& rawleft, const std::array<float, 5>& rawright);
 	std::array<float, 5> m_lastRawLeft{};
 	std::array<float, 5> m_lastRawRight{};
