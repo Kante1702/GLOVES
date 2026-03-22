@@ -65,9 +65,13 @@ bool RobotCommunicationServer::sendCommand(const std::string& command) {
 	int result = send(m_clientSocket, command.c_str(), command.length(), 0);
 
 	if (result == SOCKET_ERROR) {
+		std::cout << "[TCP] Robot disconnected (send failed)\n";
+		closesocket(m_clientSocket);
+		m_clientSocket = INVALID_SOCKET;
+		m_connected = false;
 		return false;
 	}
-	return result != SOCKET_ERROR;
+	return true;
 }
 
 std::string RobotCommunicationServer::receiveData() {
@@ -75,10 +79,22 @@ std::string RobotCommunicationServer::receiveData() {
 	char buffer[1024];
 	int bytes = recv(m_clientSocket, buffer, sizeof(buffer), 0);
 
-	if (bytes > 0) {
-		return std::string(buffer, bytes);
+	if (bytes == 0) {
+		std::cout << "[TCP] Robot disconnected\n";
+		closesocket(m_clientSocket);
+		m_clientSocket = INVALID_SOCKET;
+		m_connected = false;
+		return "";
 	}
-	return "";
+
+	if (bytes == SOCKET_ERROR) {
+		std::cout << "[TCP] Robot disconnected (recv error)\n";
+		closesocket(m_clientSocket);
+		m_clientSocket = INVALID_SOCKET;
+		m_connected = false;
+		return "";
+	}
+	return std::string(buffer, bytes);
 }
 
 void RobotCommunicationServer::stopServer() {

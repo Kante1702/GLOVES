@@ -39,7 +39,7 @@ int main() {
                 glove.disconnect();
 
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(300));
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
                 running = false;
             }
@@ -48,6 +48,9 @@ int main() {
             }
             else if (c == 'e' || c == 'E') {
                 glove.startExperiment();
+            }
+            else if (c == 'x' || c == 'X') {
+                glove.stopExperiment();
             }
             else if (c == 's' || c == 'S') {
                 glove.confirmCalibrationStep(glove.m_lastRawLeft, glove.m_lastRawRight);

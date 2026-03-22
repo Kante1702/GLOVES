@@ -313,6 +313,7 @@ void GloveValues::stopExperiment() {
 	m_experimentMode = false;
 	m_leftGestureRecognizer.setExperimentMode(false);
 	m_rightGestureRecognizer.setExperimentMode(false);
+	m_experiment.stopEarly();
 }
 
 

@@ -29,7 +29,7 @@ class GloveValues : public GloveConnection {
 	//experiment
 	GestureExperiment m_experiment;	
 	bool m_experimentMode = false;
-	void stopExperiment();
+	
 	///experimemnt
 
 
@@ -122,6 +122,7 @@ public:
 	void setOnlyBendingLog(bool value) { m_logOnlyBending = value; };
 	void startCalibrating();
 	void startExperiment();
+	void stopExperiment();
 	void confirmCalibrationStep(const std::array<float, 5>& rawleft, const std::array<float, 5>& rawright);
 	std::array<float, 5> m_lastRawLeft{};
 	std::array<float, 5> m_lastRawRight{};

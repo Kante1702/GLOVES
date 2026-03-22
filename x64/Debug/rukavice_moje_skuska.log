@@ -1,4 +1,27 @@
-﻿  Main.cpp
+﻿  GestureExperiment.cpp
+  GloveValues.cpp
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         with
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         [
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:             _Ty=float
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         ]
+  (compiling source file 'GloveValues.cpp')
+  
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  (compiling source file 'GloveValues.cpp')
+  
+  ImuConfiguration.cpp
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         with
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         [
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:             _Ty=float
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         ]
+  (compiling source file 'ImuConfiguration.cpp')
+  
+D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  (compiling source file 'ImuConfiguration.cpp')
+  
+  Main.cpp
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305: 'initializing': truncation from 'double' to '_Ty'
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         with
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.hpp(22,75): warning C4305:         [
@@ -9,4 +32,36 @@ D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureLibrary.
 D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska\GestureRecognizer.hpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   (compiling source file 'Main.cpp')
   
+  Generating Code...
+GSdkCoreStatic.lib(Adapter.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Adapter.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(Guid.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Guid.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(AdapterImpl_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(AdapterImpl_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BaseDevice_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BaseDevice_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(CharacteristicImpl_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(CharacteristicImpl_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(DescriptorImpl_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(DescriptorImpl_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(DeviceAddress_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(DeviceAddress_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(DeviceImpl_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(DeviceImpl_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(DeviceProperty_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(DeviceProperty_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(HandleResult_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(HandleResult_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(SecurityRequest_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(SecurityRequest_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(ServiceImpl_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ServiceImpl_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(Types_Win.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Types_Win.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(AssemblyTypes.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(AssemblyTypes.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(Indirect.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Indirect.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(Logger.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Logger.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(Utils.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(Utils.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(AxisMode.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(AxisMode.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardAdapterPeripheralSource.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardAdapterPeripheralSource.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardColor.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardColor.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardPeripheral.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardPeripheral.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardTypes.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardTypes.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(FirmwareVersion.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(FirmwareVersion.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardPeripheralImpl.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardPeripheralImpl.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(BoardStream.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(BoardStream.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(ImuConfig.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ImuConfig.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(KeyTrigger.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(KeyTrigger.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(ExternalSensorAssembly.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(ExternalSensorAssembly.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(AdapterCentralImpl.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(AdapterCentralImpl.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(PeripheralBase.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(PeripheralBase.obj)' or at ''; linking object as if no debug info
+GSdkCoreStatic.lib(PeripheralCentral.obj) : warning LNK4099: PDB '' was not found with 'GSdkCoreStatic.lib(PeripheralCentral.obj)' or at ''; linking object as if no debug info
   rukavice_moje_skuska.vcxproj -> D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\x64\Debug\rukavice_moje_skuska.exe

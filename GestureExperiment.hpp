@@ -19,6 +19,7 @@ class GestureExperiment {
     int m_repeatCount = 5; //pocet opakovani gesta
     std::vector<std::pair<std::string, std::string>> m_gestures; //vstupne gesta
     std::vector<std::pair<std::string, std::string>> m_sequence; //nahodne poradie 
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> m_confusionMatrix; //m_confusionMatrix[ocakavane][rozoznane] = pocet
     std::unordered_map<std::string, long long> m_results;
     std::unordered_map<std::string, int> m_resultCounts;
     std::chrono::steady_clock::time_point m_startTime;
@@ -28,11 +29,12 @@ class GestureExperiment {
     void buildRandomSequence();
     void showNextGesture();
     void saveAverages();
-
+    void saveConfusionMatrix();
 
 public: 
 
     void start();
+    void stopEarly();
 	void processGesture(const std::string& hand, const std::string& gesture);
 	void setGestures(const std::vector<std::pair<std::string, std::string>>& gestures);
 	bool isRunning() const { return m_running; }
