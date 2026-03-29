@@ -1,7 +1,5 @@
-IMU konfigurácia je kľúčová preto, že ovplyvňuje kvalitu dát,
-z ktorých sa rozpoznávajú gestá.
-V bakalárke môžeš jasne ukázať, že systém načíta IMU config,
-a teda vieš garantovať presnosť a konzistentnosť meraní.
 
+cd /d D:\VYSKA\C++_SELFSTUDY\rukavice_moje_skuska\rukavice_moje_skuska
 
+py boxplot.py <nazov_csv_suboru>.csv
 

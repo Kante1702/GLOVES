@@ -17,6 +17,7 @@ class GestureExperiment {
 
     size_t m_currentIndex = 0;
     int m_repeatCount = 5; //pocet opakovani gesta
+    int m_delayBetweenGesturesMs = 1800;
     std::vector<std::pair<std::string, std::string>> m_gestures; //vstupne gesta
     std::vector<std::pair<std::string, std::string>> m_sequence; //nahodne poradie 
     std::unordered_map<std::string, std::unordered_map<std::string, int>> m_confusionMatrix; //m_confusionMatrix[ocakavane][rozoznane] = pocet

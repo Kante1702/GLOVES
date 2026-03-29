@@ -137,6 +137,10 @@ void GestureExperiment::showNextGesture() {
 		return;
 	}
 
+
+	////////////// vylepsenie pre minimalizaciu chyb pri teste (casove okno po kazdom geste) (cas sa nezapocitava do reakcneho casu !!)
+	std::this_thread::sleep_for(std::chrono::milliseconds(m_delayBetweenGesturesMs));
+
 	auto g =m_sequence[m_currentIndex];
 
 	std::cout << "\n--------------------------------\n";
