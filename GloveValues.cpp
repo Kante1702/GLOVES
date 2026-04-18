@@ -147,6 +147,15 @@ std::string GloveValues::gesturesToCommand(const std::string& gesture) {
 }
 
 
+bool GloveValues::sendManualCommand(const std::string& rawCommand) {
+	if (!m_robotServer) {
+		return false;
+	}
+	return m_robotServer->sendCommand(rawCommand);
+
+}
+
+
 
 
 void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeripheral> board) {

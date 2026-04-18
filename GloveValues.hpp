@@ -124,10 +124,12 @@ public:
 	void startExperiment();
 	void stopExperiment();
 	void confirmCalibrationStep(const std::array<float, 5>& rawleft, const std::array<float, 5>& rawright);
+	bool sendManualCommand(const std::string& rawCommand);
 	std::array<float, 5> m_lastRawLeft{};
 	std::array<float, 5> m_lastRawRight{};
 	CalibrationManager m_calibrationManager;
 	virtual void disconnect() override;
+
 protected:
 
 	std::map<std::string, std::shared_ptr<GSdk::Board::BoardPeripheral>> m_peripherals;
