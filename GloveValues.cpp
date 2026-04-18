@@ -134,12 +134,12 @@ std::string GloveValues::gesturesToCommand(const std::string& gesture) {
 	if (gesture == "Right_Pitch") return "121";
 	if (gesture == "Right_Roll") return "122";
 	if (gesture == "Right_RobotDisconnect") return "130";
-	if (gesture == "Right_Custom_Mode") return "131";
+	//if (gesture == "Right_Custom_Mode") return "131";
 	if (gesture == "Right_Stop_Resume") return "101";
-	if (gesture == "Left_XYZ_Mode") return "240";
-	if (gesture == "Left_Rotation_Mode") return "241";
-	if (gesture == "Left_Custom_Mode") return "242";
-	if (gesture == "Left_Service_Mode") return "243";
+	//if (gesture == "Left_XYZ_Mode") return "240";
+	//if (gesture == "Left_Rotation_Mode") return "241";
+	//if (gesture == "Left_Custom_Mode") return "242";
+	//if (gesture == "Left_Service_Mode") return "243";
 	if (gesture == "Left_Positive_Direction") return "250";
 	if (gesture == "Left_Negative_Direction") return "251";
 	if (gesture == "Left_Stop_Resume") return "201";
@@ -434,7 +434,7 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty())
 			{
-				m_robotServer->sendCommand(command + "\n");
+				m_robotServer->sendCommand(command);
 			}
 		}
 		return;
@@ -484,7 +484,7 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 		std::string command = gesturesToCommand(gesture);
 		if (!command.empty()) {
 
-			m_robotServer->sendCommand(command + "\n");
+			m_robotServer->sendCommand(command);
 		}
 	}
 
@@ -505,7 +505,7 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 		if (m_robotServer) {
 			std::string command = gesturesToCommand(gesture);
 			if (!command.empty()) {
-				m_robotServer->sendCommand(command + "\n");
+				m_robotServer->sendCommand(command);
 			}
 		}
 
@@ -522,7 +522,7 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 
 		std::string command = gesturesToCommand(gesture);
 		if (!command.empty()) {
-			m_robotServer->sendCommand(command + "\n");
+			m_robotServer->sendCommand(command );
 		}
 	}
 

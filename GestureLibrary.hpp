@@ -17,24 +17,24 @@ public:
 		gestures.push_back(Gesture("Lock_Unlock", { 0.6f,0.5f ,0.0f ,0.0f,0.6f }, { 1.0f ,1.0f ,0.4f ,0.4f,1.0f },HandType::Right,600, true)); //thumb, index, little straight 
 
 		//prava TRANSLATION MODE - X,Y,Z
-		gestures.push_back(Gesture("Right_X",{ 0.0f,0.65f ,0.7f ,0.0f,0.0f},{0.4f ,1.0f ,1.0f ,0.4f,0.4f},HandType::Right,5)); //X //index and middle straight
+		gestures.push_back(Gesture("Right_X",{ 0.0f,0.65f ,0.7f ,0.0f,0.0f},{0.4f ,1.0f ,1.0f ,0.4f,0.4f},HandType::Right,50)); //X //index and middle straight
 
-		gestures.push_back(Gesture("Right_Y", { 0.0f,0.7f ,0.7f ,0.7f,0.0f }, { 0.4 ,1.0f ,1.0f ,1.0f,0.4f },HandType::Right,5));//Y //index,middle and ring straight
+		gestures.push_back(Gesture("Right_Y", { 0.0f,0.7f ,0.7f ,0.7f,0.0f }, { 0.4 ,1.0f ,1.0f ,1.0f,0.4f },HandType::Right,50));//Y //index,middle and ring straight
 
-		gestures.push_back(Gesture("Right_Z", { 0.0f,0.75f ,0.75f ,0.75f,0.75f }, { 0.1f ,1.0f ,1.0f ,1.0f,1.0f },HandType::Right,5)); //Z //thumb closed others straights
+		gestures.push_back(Gesture("Right_Z", { 0.0f,0.75f ,0.75f ,0.75f,0.75f }, { 0.1f ,1.0f ,1.0f ,1.0f,1.0f },HandType::Right,50)); //Z //thumb closed others straights
 
 		//prava ROTATION MODE - Yaw ,Pitch, Roll 
-		gestures.push_back(Gesture("Right_Yaw", { 0.0f,0.65f ,0.0f ,0.0f,0.0f }, { 0.6f ,1.0f ,0.4f ,0.6f,0.4f }, HandType::Right,5)); // Yaw //index straight
+		gestures.push_back(Gesture("Right_Yaw", { 0.0f,0.65f ,0.0f ,0.0f,0.0f }, { 0.6f ,1.0f ,0.4f ,0.6f,0.4f }, HandType::Right,50)); // Yaw //index straight
 
-		gestures.push_back(Gesture("Right_Pitch", { 0.0f,0.0f ,0.6f ,0.0f,0.0f }, { 0.4f ,0.5f ,1.0f ,0.65f,0.4f }, HandType::Right,5)); //Pitch //middle straight  **********************
+		gestures.push_back(Gesture("Right_Pitch", { 0.0f,0.0f ,0.6f ,0.0f,0.0f }, { 0.4f ,0.5f ,1.0f ,0.65f,0.4f }, HandType::Right,50)); //Pitch //middle straight 
 
-		gestures.push_back(Gesture("Right_Roll",{ 0.0f,0.0f ,0.0f ,0.0f,0.75f }, { 0.3f ,0.4f ,0.3f ,0.5f,1.0f }, HandType::Right,5)); //Roll //pinky straight
+		gestures.push_back(Gesture("Right_Roll",{ 0.0f,0.0f ,0.0f ,0.0f,0.75f }, { 0.3f ,0.4f ,0.3f ,0.5f,1.0f }, HandType::Right,50)); //Roll //pinky straight
 
 		//prava CUSTOM MODE 
 
 		gestures.push_back(Gesture("Right_Custom_Mode", { 0.0f,0.0f ,0.6f ,0.6f,0.0f }, { 0.35f ,0.35f ,1.0f ,1.0f,0.35f }, HandType::Right,500)); //nieco //middle and ring straight
 
-		gestures.push_back(Gesture("Right_RobotDisconnect", { 0.65f,0.0f ,0.0f ,0.0f,0.0f }, { 1.0f ,0.35f ,0.35f ,0.35f,0.35f }, HandType::Right, 500)); // Disconnect robot // Thumb straight 
+		gestures.push_back(Gesture("Right_RobotDisconnect", { 0.0f,0.0f, 0.7f,0.8f, 0.8f }, { 0.4f,0.4f, 1.0f,1.0f,1.0f }, HandType::Right, 400)); // Disconnect robot // Thumb straight 
 
 		//Prava mozno stop /start
 		gestures.push_back(Gesture("Right_Stop_Resume", { 0.0f,0.0f ,0.0f ,0.0f,0.0f }, { 0.4f,0.4f ,0.4f ,0.4f ,0.4f },HandType::Right,400)); //fist
@@ -74,7 +74,7 @@ public:
 		
 		gestures.push_back(Gesture("Gesto_1", { 0.0f,0.55f ,0.0f ,0.0f,0.8f }, { 0.4f ,1.0f ,0.4f ,0.4f,1.0f }, HandType::Right)); //index and pinky straight 
 		
-		gestures.push_back(Gesture("Gesto_2", {0.0f,0.0f, 0.7f,0.8f, 0.8f}, {0.4f,0.4f, 1.0f,1.0f,1.0f}, HandType::Right));
+		//gestures.push_back(Gesture("Gesto_2", { 0.65f, 0.0f, 0.0f, 0.0f, 0.0f }, { 1.0f ,0.35f ,0.35f ,0.35f,0.35f }, HandType::Right)); //thumb straight 
 
 		gestures.push_back(Gesture("Gesto_3", {0.8f, 0.0f,0.0f, 0.0f, 0.75f}, {1.0f, 0.4f,0.4f, 0.4f , 1.0f}, HandType::Right));
 
