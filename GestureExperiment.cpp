@@ -126,7 +126,8 @@ void GestureExperiment::setGestures(const std::vector<std::pair<std::string, std
 }
 
 void GestureExperiment::showNextGesture() {
-	
+	m_gestureAccepted = false; //odblokuj prijem gest pre nove gesto
+
 	if (m_currentIndex >= m_sequence.size()) {
 		std::cout << "\n==================================\n";
 		std::cout << "Experiment finished\n";
@@ -242,6 +243,11 @@ void GestureExperiment::processGesture(const std::string& hand, const std::strin
 		return;
 	}
 
+	//ak uz bolo gesto rozpoznane, ignoruj dalsie callbacky z rukavic
+	if (m_gestureAccepted) {
+		return;
+	}
+
 	auto end = std::chrono::steady_clock::now();
 	
 	// Reakcny cas sa meria pre vsetky gesta spravnej ruky, aj pri nespravenej zamene
@@ -261,7 +267,8 @@ void GestureExperiment::processGesture(const std::string& hand, const std::strin
 	m_file << hand << ";" << gesture << ";" << reactionTime << "\n";
 	m_results[gesture] += reactionTime;
 	m_resultCounts[gesture]++;
-	m_file.flush();		// okamzity zapis - ochrana pred stratou dat pri predcasnom ukonceni
+	m_file.flush();				// okamzity zapis - ochrana pred stratou dat pri predcasnom ukonceni
+	m_gestureAccepted = true;	//zamedzenie zapisovaniu dodatocnych roroznavani po uspesnom geste
 
 	m_currentIndex++;
 	showNextGesture();

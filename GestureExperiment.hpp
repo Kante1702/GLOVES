@@ -29,6 +29,7 @@ class GestureExperiment {
 
     bool m_waitingForStart = true;
     bool m_running = false;
+    bool m_gestureAccepted = false; //blokuje zapisy do matice po spravnom rozoznani
 
     size_t m_currentIndex = 0;
     int m_repeatCount = 5;                  // pocet opakovani kazdeho gesta v sekvencii
