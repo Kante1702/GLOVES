@@ -1,3 +1,14 @@
+// GestureRecognizer.hpp
+// Rozpoznavac gest v realnom case pre jednu rukavicu.
+// Pri kazdom prichode BT dat sa pre kazde gesto v databaze skontroluje,
+// ci su splnene prahy vsetkych 5 prstov. Ak ano, spusti sa casovy citac.
+// Gesto je potvrdene az po tom, co su prahy splnene nepretrzite po dobu
+// holdTimeMs milisekund. V experimentalnom rezime je tato doba skratena
+// na 1 ms pre okamzitu detekciu bez cakania.
+// Po kazdom potvrdenom geste je potrebne zavolat reset() pre vymazanie
+// casovych citacov, aby sa predislo nasobnej detekcii.
+
+
 #pragma once
 #ifndef GESTURERECOGNIZER_HPP
 #define GESTURERECOGNIZER_HPP
@@ -6,7 +17,7 @@
 #include <optional>
 #include <string>
 #include <array>
-#include <unordered_map>;
+#include <unordered_map>
 #include <chrono>
 
 
@@ -16,35 +27,39 @@ class GestureRecognizer {
 	HandType hand;
 
 
-	//uchovavanie start casu pre kazde gesto
+	// Casova znacka zaciaku splnenia podmienok pre kazde gesto
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> gestureStartTime;
 	bool m_experimentMode = false;
 	
 
 
 public:
-	//experimet
-	void reset() {
-		gestureStartTime.clear();
-	}
-	void setExperimentMode(bool val) { m_experimentMode = val; };
-
 	//experiment
 	GestureRecognizer(HandType h) : hand(h) {}
 
-	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues ) {
-		
+	// Vymaze vsetky priebezne casove citace - volat po kazdom potvrdenom geste
+	void reset() {
+		gestureStartTime.clear();
+	}
 
+	// Zapina experimentalny rezim, kde holdTimeMs = 1 ms pre okamzitu detekciu
+	void setExperimentMode(bool val) {
+		m_experimentMode = val; 
+	};
+
+	
+	// Hlavna funkcia - volana pri kazdom BT frame.
+	// Vrati nazov gesta ak bolo potvrdene, inak vrati nullopt.
+	std::optional<std::string> recognize(const std::array<float, 5>& fingerValues ) {
+	
 		auto now = std::chrono::steady_clock::now();
 		auto gestures = library.getGesturesForHand(hand);
 		
-	
-
 
 		for (const auto& gesture : gestures) {
-
 			bool matching = true;
 
+			// Kontrola ci su splnene prahy pre vsetkych 5 prstov
 			for (size_t i = 0; i < 5; ++i) {
 				if (fingerValues[i] < gesture.lowerTresholds[i] || fingerValues[i] > gesture.upperTresholds[i]) {
 					matching = false;
@@ -55,6 +70,7 @@ public:
 			if (matching) {
 
 				if (!gestureStartTime.count(gesture.name) ){
+					// Prva iteracia kde su prahy splnene - zaciname merat cas
 					gestureStartTime[gesture.name] = now;
 				}
 				else {
@@ -64,13 +80,13 @@ public:
 
 					if (elapsed >= holdMs) {
 
-						gestureStartTime.erase(gesture.name);//reset po detekcii
+						gestureStartTime.erase(gesture.name);		// reset citaca po detekcii
 						return gesture.name;
 					}
 				}
 			}
 			else {
-				gestureStartTime.erase(gesture.name);//ak gesto nepasuje, reset casu
+				gestureStartTime.erase(gesture.name);				 // Prahy prestali byt splnene - resetujeme citac pre toto gesto
 			}
 
 		}

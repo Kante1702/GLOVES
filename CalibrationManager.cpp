@@ -1,25 +1,25 @@
+// CalibrationManager.cpp
+// Implementacia zberu kalibracnych vzoriek a normalizacie pre obe rukavice.
+
+
 #include "CalibrationManager.hpp"
-
-
 
 
 	void CalibrationManager::startCalibration() {
 		m_isCalibrating = true;
+		// Reset existujucich dat - kalibracia zacina odznova
 		for (auto& [key, d] : data) {
-			d = CalibrationData(); //reset;
+			d = CalibrationData(); 
 		}
 	}
 	void CalibrationManager::finishCalibration() {
 		m_isCalibrating = false;
 	}
 
-	//raw sluzi na min/max
 	void CalibrationManager::updateRaw(const std::string& gloveName, const std::array<float, 5>& raw) {
 		data[gloveName].update(raw);
 	}
 
-
-	//uklada hodnoty pre otvorenu ruku (kalibracia)
 	void CalibrationManager::setOpenHand(const std::string& gloveName,
 		const std::array<float, 5>& values)
 	{
@@ -32,7 +32,7 @@
 		d.openedSet = true;
 	}
 
-	//uklada hodnoty pre zatvorenu ruku (kalibracia)
+
 	void CalibrationManager::setFist(const std::string& gloveName, const std::array<float, 5>& values) {
 		auto& d = data[gloveName];
 
@@ -40,7 +40,7 @@
 			d.fist[i] = values[i];
 		}
 		d.fistSet = true;
-		// FIST = minimum (0.0)
+		
 
 	}
 	bool CalibrationManager::collectOpenSamples(const std::string& gloveName,
@@ -49,11 +49,12 @@
 		auto& samples = m_openSamples[gloveName];
 		samples.push_back(values);
 
+		// Cakame kym sa nenazbiera potrebny pocet vzoriek
 		if (samples.size() < m_requiredSamples)
 			return false;
 
+		// Vypocet priemeru pre kazdy prst zo vsetkych nazbieranych vzoriek
 		auto& d = data[gloveName];
-
 		for (int i = 0; i < 5; i++) {
 			float sum = 0.0f;
 			for (auto& s : samples)
@@ -92,7 +93,6 @@
 	}
 
 
-	//kotrola ci je kalibracia kompletna
 	bool CalibrationManager::isCalibrated(const std::string& gloveName) const {
 
 		auto it = data.find(gloveName);
@@ -103,12 +103,11 @@
 
 	}
 
-	//normalizacia
 	std::array<float, 5> CalibrationManager::normalize(const std::string& gloveName, const std::array<float, 5>& raw) const {
 
 		auto it = data.find(gloveName);
 		if (it == data.end()) {
-			return raw; //fallback
+			return raw; // kalibracia chyba, vratime povodne hodnoty
 		}
 
 		return it->second.normalizeAll(raw);
@@ -123,6 +122,9 @@
 
 		std::ofstream file("calibration_" + gloveName + ".csv");
 		if (!file.is_open()) return;
+
+
+		// Format: stitok;prst0;prst1;prst2;prst3;prst4
 
 		// MIN
 		file << "Min;";

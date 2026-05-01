@@ -28,7 +28,8 @@ void ImuConfiguration::readImu() {
 			this->printError("[ " + gloveName + " ]" + "Invalid peripheral reference");
 			continue;
 		}
-		//Tým pádom len odkážeš na existujúci objekt, ktorý už SDK vytvorilo, a nebude sa pokúša ho inštanciova.
+
+		// Pouzivame referenciu na existujuci SDK objekt - nevytvarame novu instanciu
 		auto& imuConfig = board->imuConfig();
 
 		if (!imuConfig.read()) {

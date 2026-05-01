@@ -1,3 +1,6 @@
+// GloveConnection.cpp
+// Implementacia BT spravy pripojenia cez CaptoGlove SDK.
+
 #include "GloveConnection.hpp"
 #include <conio.h>
 #include <thread>
@@ -5,10 +8,8 @@
 using namespace GSdk;
 
 GloveConnection::GloveConnection():LoggerBase("GloveConnection") {
-
+	// Vytvorenie BT central managera - vstupny bod SDK
 	m_central = Board::makeBoardAdapterCentral();
-
-
 }
 
 
@@ -26,11 +27,12 @@ bool GloveConnection::connect() {
 		return false;
 	}
 
-	//zaciname skenovat (5s)
+	// Callback pri zmene stavu skenovania - informatívny vypis
 	m_central->scanChanged().connect([this](const Board::CentralScanEventArgs &args) {
 		this->printInfo("Central status (changed): " + to_string(args.scan()));
 			});
 
+	// Callback pri detekcii noveho BT zariadenia v okolí
 	m_central->peripheralsChanged().connect([this](const Board::CentralPeripheralsEventArgs& args) {
 		auto peripherals = args.inserted();
 		for (auto peripheral : peripherals) {
@@ -43,7 +45,7 @@ bool GloveConnection::connect() {
 				m_peripheral = board;
 
 
-				//sledovanie zmeny statusu rukavice
+				// Sledovanie zmeny stavu pripojenia rukavice pocas celej doby behu
 				m_peripheral->propertyChanged().connect([this](const Board::PeripheralPropertyEventArgs& args) {
 					if (args.name == Board::PeripheralProperty::status) {
 						this->printInfo("Status changed: " + to_string(this->m_peripheral->status()));
@@ -53,10 +55,8 @@ bool GloveConnection::connect() {
 				if (board->start()) {
 					
 					this->printInfo("Status(after start): "+ to_string(peripheral->status()));
-					disableHID(board);
-
-					//zavola sa hook = nadchadzajuci kod moze reagovat
-					onPeripheralConnected(board);
+					disableHID(board);					// vypnutie HID pred zacatim prijímania dat
+					onPeripheralConnected(board);		// notifikacia odvodenej triedy
 				}
 				else {
 					this->printError("Failed to connect ... Waiting to reconnect... ");
@@ -66,6 +66,7 @@ bool GloveConnection::connect() {
 		}
 	});
 
+	// Spustenie BT skenovania s casovym limitom 5 sekund
 	m_central->startScan(GSdkScanOptionsMake(5));
 	return true;
 
@@ -79,13 +80,11 @@ void GloveConnection::disconnect() {
 	}
 
 	if (m_peripheral) {
+		onPeripheralDisconnected(); // najprv necháme odvodenú triedu vyèisti streamy
 		
-		onPeripheralDisconnected();
-
-		
+		// Kratka pauza pre dokoncenie vsetkych callbackov pred zastavenim periferneho zariadenia
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		// 3. AŽ POTOM zastav perifériu
 		m_peripheral->stop();
 		m_peripheral.reset();
 	}
@@ -97,11 +96,8 @@ void GloveConnection::disableHID(std::shared_ptr<GSdk::Board::BoardPeripheral> b
 
 	GSdk::Board::EmulationModes modes = GSdk::Board::getEmptyEmulationModes();
 
-	//dolezite len prstove data
+	// Vypnutie vsetkych HID rezimov - pouzivame len surove senzorove data prstov
 	modes.fingers = false;
-
-
-	//ostatne pre istotu nastavime na false
 	modes.acceleration = false;
 	modes.barometer = false;
 	modes.inputAxis = false;

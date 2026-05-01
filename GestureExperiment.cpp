@@ -1,3 +1,7 @@
+// GestureExperiment.cpp
+// Implementacia experimentalnej verifikacie rozpoznavania gest.
+
+
 #include "GestureExperiment.hpp"
 #include <conio.h>
 #include <iostream>
@@ -14,10 +18,7 @@ void GestureExperiment::buildRandomSequence() {
 	std::random_device rd;
 	std::mt19937 rng(rd());
 
-
-
-	//rozdelenie gesta podla ruky
-	//g.second = nazov gesta
+	// Rozdelenie gest podla ruky
 	std::vector<std::pair<std::string, std::string>> leftGestures, rightGestures;
 	for (const auto& g : m_gestures) {
 		if (g.first == "LEFT") {
@@ -29,7 +30,7 @@ void GestureExperiment::buildRandomSequence() {
 		}
 	}
 
-	//kazde gesto m_repeatCount krat
+	// Naplnenie bazenov - kazde gesto sa opakuje m_repeatCount krat
 	std::vector<std::pair<std::string, std::string >> leftPool, RightPool;
 	for (int i = 0; i < m_repeatCount; i++) {
 		for (const auto& g : leftGestures) {
@@ -40,11 +41,12 @@ void GestureExperiment::buildRandomSequence() {
 		}
 	}
 
-	//zamiesanie
+	// Nahodne zamieshanie v ramci kazdeho bazena
 	std::shuffle(leftPool.begin(), leftPool.end(), rng);
 	std::shuffle(RightPool.begin(), RightPool.end(), rng);
 
-	//striedanie lava potom prava
+	// Striedanie lavej a pravej ruky v sekvencii - znizuje pocet faloshnych
+	// zaznamov v matici zamen, pretoze gesta z neocakavanej ruky su ignorovane
 	size_t li = 0;
 	size_t ri = 0;
 
@@ -75,7 +77,7 @@ void GestureExperiment::start()
 		m_file.close();
 	}
 
-
+	// Nazov suboru obsahuje cas spustenia pre jednoznacnu identifikaciu merania
 	auto now = std::chrono::system_clock::now();
 	std::time_t t = std::chrono::system_clock::to_time_t(now);
 	std::tm tm{};
@@ -84,7 +86,7 @@ void GestureExperiment::start()
 	char filename[64];
 	std::strftime(filename, sizeof(filename), "ExperimentResults_%H%M%S.csv", &tm);
 	m_file.open(filename);
-	m_file << "Ruka" << ";" << "Gesto" <<";" << "ReakcnyÈas[ms]\n";
+	m_file << "Ruka" << ";" << "Gesto" <<";" << "ReakcnyCas[ms]\n";
 
 	
 	std::cout << "\nExperiment starting in:\n";
@@ -138,7 +140,8 @@ void GestureExperiment::showNextGesture() {
 	}
 
 
-	////////////// vylepsenie pre minimalizaciu chyb pri teste (casove okno po kazdom geste) (cas sa nezapocitava do reakcneho casu !!)
+	// Pauza medzi gestami - nezapocitava sa do reakcneho casu, ale zabranuje
+   // tomu, aby koniec predchadzajuceho gesta ovplyvnil meranie nasledujuceho
 	std::this_thread::sleep_for(std::chrono::milliseconds(m_delayBetweenGesturesMs));
 
 	auto g =m_sequence[m_currentIndex];
@@ -148,6 +151,7 @@ void GestureExperiment::showNextGesture() {
 	std::cout << g.first << " -> " << g.second << "\n";
 	std::cout << "--------------------------------\n";
 
+	// Meranie reakcneho casu zacina az po zobrazeni vyzvy
 	m_startTime = std::chrono::steady_clock::now();
 
 }
@@ -184,7 +188,7 @@ void GestureExperiment::saveConfusionMatrix() {
 	char filename[64];
 	std::strftime(filename, sizeof(filename), "ConfusionMatrix_%H%M%S.csv", &tm);
 
-	//zoznam gest v pporadi ako boli zadane
+	// Pouzivame poradie gest zo vstupneho zoznamu pre konzistentne oznacenie riadkov a stlpcov
 	std::vector<std::string> labels;
 	for (const auto& g : m_gestures) {
 		labels.push_back(g.second);
@@ -192,15 +196,14 @@ void GestureExperiment::saveConfusionMatrix() {
 
 	std::ofstream f(filename);
 
-	//header
+	// Hlavicka - riadok = ocakavane gesto, stlpec = rozoznane gesto
 	f << "Ocakavane (riadok)\\ Rozoznane (stlpec)";
 	for (const auto& col : labels) {
 		f << ";" << col;
 	}
 	f << "\n";
 
-	//Riadky matice
-
+	// Riadky matice - kazda bunka obsahuje pocet zamen
 	for (const auto& row : labels) {
 
 		f << row;
@@ -212,7 +215,6 @@ void GestureExperiment::saveConfusionMatrix() {
 				if (it2 != it->second.end()) {
 					count = it2->second;
 				}
-				
 			}
 			f << ";" << count;
 		}
@@ -221,12 +223,6 @@ void GestureExperiment::saveConfusionMatrix() {
 	f.close();
 }
 
-
-
-
-// processGesture – KLUCOVA ZMENA:
-//   - ak spravna ruka urob ZLES gesto -> zaloguj zamenu a pokracuj cakat
-//   - ak spravna ruka urob SPRAVNE gesto -> zaloguj uspech, posun sa dalej
 
 void GestureExperiment::processGesture(const std::string& hand, const std::string& gesture) {
 
@@ -239,29 +235,34 @@ void GestureExperiment::processGesture(const std::string& hand, const std::strin
 	}
 
 	auto expected = m_sequence[m_currentIndex];
-	//zla ruka uplne ignorujeme gesta
+	
+	// Gesta z neocakavanej ruky su uplne ignorovane - striedanie ruk zaistuje,
+	// ze jedno gesto nemozno splnit za ine z opacnej ruky
 	if (expected.first != hand) {
 		return;
 	}
 
-	//aj pre zle aj dobre gesto meriame cas 
 	auto end = std::chrono::steady_clock::now();
-
+	
+	// Reakcny cas sa meria pre vsetky gesta spravnej ruky, aj pri nespravenej zamene
 	auto reactionTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - m_startTime).count();
 
-	//aktualizujeme maticu zamen
+	// Matica zamen sa aktualizuje pre spravne aj nespravne gesta (vratan diagonala)
 	m_confusionMatrix[expected.second][gesture]++;
 	
 	if (expected.second != gesture) {
+		// Nespravne gesto - zaznamenana zamena, cakame na spravne gesto
 		std::cout << "[!!!] Wrong: expected " << expected.second << "\n";
 		return;
 	}
 
+	// Spravne gesto - ulozenie reakcneho casu a posun na dalsi prvok sekvencie
 	std::cout << "Recognized in: " << reactionTime << " ms" << std::endl;
 	m_file << hand << ";" << gesture << ";" << reactionTime << "\n";
 	m_results[gesture] += reactionTime;
 	m_resultCounts[gesture]++;
-	m_file.flush();
+	m_file.flush();		// okamzity zapis - ochrana pred stratou dat pri predcasnom ukonceni
+
 	m_currentIndex++;
 	showNextGesture();
 }

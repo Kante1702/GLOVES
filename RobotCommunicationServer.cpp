@@ -1,8 +1,12 @@
+// Implementacia TCP servera pre komunikaciu s FANUC robotom.
+
+
 #include "RobotCommunicationServer.hpp"
 #include <iostream>
 
 RobotCommunicationServer::RobotCommunicationServer(int port) : m_port(port), m_connected(false), m_serverSocket(INVALID_SOCKET), m_clientSocket(INVALID_SOCKET){
 
+	// Inicializacia kniZnice Winsock - vyzadovana pred pouzitim socketov na Windows
 	WSAData ws;
 	WSAStartup(MAKEWORD(2, 2), &ws);
 	m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -21,14 +25,14 @@ bool RobotCommunicationServer::startServer() {
 	sockaddr_in server;
 	server.sin_family = AF_INET;
 	server.sin_port = htons(m_port);
-	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_addr.s_addr = INADDR_ANY; 
 
 	if (bind(m_serverSocket, (sockaddr*)&server, sizeof(server)) == SOCKET_ERROR) {
 		std::cout<<"BIND FAILED"<<std::endl;
 		return false;
 	}
 	
-	if (listen(m_serverSocket, 1) == SOCKET_ERROR) {
+	if (listen(m_serverSocket, 1) == SOCKET_ERROR) {				// backlog = 1, ocakavame len robota
 		std::cout << "LISTEN FAILED\n";
 		return false;
 	}
@@ -42,12 +46,18 @@ bool RobotCommunicationServer::waitForRobot() {
 
 	sockaddr_in client;
 	int clientSize = sizeof(client);
-	m_clientSocket = accept(m_serverSocket, (sockaddr*)&client, &clientSize);
+
+	// Blokujuca operacia - program caka kym sa robot nepripoji
+	m_clientSocket = accept(m_serverSocket, (sockaddr*)&client, &clientSize);	
 
 	if (m_clientSocket == INVALID_SOCKET) {
 		std::cout << "ACCEPT FAILED" << std::endl;
 		return false;
 	}
+
+	int flag = 1;
+	setsockopt(m_clientSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
+
 	m_connected = true;
 	std::cout << "ROBOT CONNECTED" << std::endl;
 	return true;
@@ -62,6 +72,9 @@ bool RobotCommunicationServer::sendCommand(const std::string& command) {
 		return false;
 	}
 
+
+	// Odosielame presne command.length() bajtov - bez znaku noveho riadku,
+	// pretoze KAREL cita presne 3 znaky cez READ file_var(str::3)
 	int result = send(m_clientSocket, command.c_str(), command.length(), 0);
 
 	if (result == SOCKET_ERROR) {

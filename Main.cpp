@@ -1,3 +1,17 @@
+// Vstupny bod aplikacie.
+// Inicializuje system, nacita kalibraciu z predchadzajuceho behu a spusti BT skenovanie.
+// Lava rukavica prepina rezimy riadenia, prava rukavica odosielá prikazy robotovi.
+// Vsetko spracovanie dat rukavic prebieha asynchronne v BT callbackoch (subscribe()).
+// Hlavna slucka je neblokujuca - iba periodicky kontroluje klavesnicu (polling s 10 ms pauzou).
+//
+// Ovladanie:
+//   c - spustenie kalibracie (4 kroky: lava otvorena/past, prava otvorena/past)
+//   s - potvrdenie aktualneho kroku kalibracie a spustenie zberu vzoriek
+//   e - spustenie experimentalnej verifikacie
+//   x - predcasne ukoncenie experimentu
+//   m - manualné odoslanie 3-znakoveho HMG prikazu (pre testovanie TCP komunikacie)
+//   q - ukoncenie aplikacie
+
 #include "ImuConfiguration.hpp"
 #include <iostream>
 #include <conio.h>
@@ -7,14 +21,16 @@ int main() {
     // 1. Inicializácia
     ImuConfiguration glove;
 
+    // Pokus o nacitanie kalibracnych dat z predchadzajuceho behu aplikacie
     glove.m_calibrationManager.loadFromCSV("Left");
     glove.m_calibrationManager.loadFromCSV("Right");
     glove.m_calibrationManager.finishCalibration();
+
+    // Logovanie iba ohybovych senzorov prstov - IMU data su vynechane 
     glove.setOnlyBendingLog(true);
 
     std::cout << "Hladam rukavice a pripajam..." << std::endl;
 
-    // 2. Pripojenie (štart skenovania a callbackov)
     if (!glove.connect()) {
         std::cout << "CHYBA: Nepodarilo sa spustit adapter!" << std::endl;
         return -1;
@@ -41,7 +57,7 @@ int main() {
                 glove.disconnect();
 
                 
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));                    // cas pre dokoncenie callbackov
 
                 running = false;
             }
@@ -77,7 +93,7 @@ int main() {
             }
         }
 
-        // Setrenie procesora
+        // Kratka pauza pre znizenie zatazenia procesora - hlavna slucka len obsluhuje klavesnicu
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

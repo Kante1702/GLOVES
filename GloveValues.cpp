@@ -1,4 +1,7 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+﻿// GloveValues.cpp
+// Implementacia jadra systemu - spracovanie dat rukavic, kalibracia, gesta, TCP.
+
+#define _CRT_SECURE_NO_WARNINGS
 #include "GloveValues.hpp"
 #include "ImuConfiguration.hpp"
 #include <iomanip> //formatovany cas
@@ -7,17 +10,17 @@
 #include <sstream>
 
 GloveValues::GloveValues() : GloveConnection() {
-	/////////nic
+	
 	LoggerBase::setName("GloveValues");
 
-	std::time_t t = std::time(nullptr); //v sekundach surovy cas
-	std::tm* now = std::localtime(&t); //rozdeli to na dni, hodiny ...
+	std::time_t t = std::time(nullptr);
+	std::tm* now = std::localtime(&t); 
 
 
-	//inicializacia spojenia
+	// Nacitanie konfiguracie (port robota, ID rukavic) zo suboru config.txt
 	loadConfig("config.txt");
 
-
+	// Spustenie TCP servera a blokujuce cakanie na pripojenie robota
 	m_robotServer = std::make_unique<RobotCommunicationServer>(m_robotPort);
 	if (m_robotServer->startServer()) {
 		this->printInfo("[TCP] Server started on port "+ std::to_string(m_robotPort));
@@ -28,18 +31,20 @@ GloveValues::GloveValues() : GloveConnection() {
 	}
 
 
-
+	//// ====================== Treba odkomentovat aby boli rozoznane v experimente (pozri aj GestureLibrary.hpp =========================
 	m_experiment.setGestures({
-	//pridane gesta
-	{"RIGHT","Gesto_1"},
-	{"RIGHT","Gesto_2"},
-	{"RIGHT","Gesto_3"},
-
-	{"LEFT","Gesto_4"},
-	{"LEFT","Gesto_5"},
-	{"LEFT","Gesto_6"},
+	// Testovacie gesta pridane pre experiment
 	
-	//povodne gesta na pravej ruke 
+	//{"RIGHT","Gesto_1"},
+	//{"RIGHT","Gesto_2"},
+	//{"RIGHT","Gesto_3"},
+
+	//{"LEFT","Gesto_4"},
+	//{"LEFT","Gesto_5"},
+	//{"LEFT","Gesto_6"},
+	
+
+	// Systemove gesta pravej ruky
 	{"RIGHT","Lock_Unlock"},
 	{"RIGHT","Right_X"},
 	{"RIGHT","Right_Y"},
@@ -51,12 +56,11 @@ GloveValues::GloveValues() : GloveConnection() {
 	{"RIGHT","Right_RobotDisconnect"},
 	{"RIGHT","Right_Stop_Resume"},
 		
-	//povodne gesta na lavej ruke 
-		
+	// Systemove gesta lavej ruky 
 	{"LEFT","Left_XYZ_Mode"},
 	{"LEFT","Left_Rotation_Mode"},
 	{"LEFT","Left_Custom_Mode"},
-	{"LEFT","Left_Service_Mode" },
+	//{"LEFT","Left_Service_Mode" },
 	{"LEFT","Left_Positive_Direction"},
 	{"LEFT","Left_Negative_Direction"},
 	{"LEFT","Left_Stop_Resume" },
@@ -88,10 +92,9 @@ void GloveValues::loadConfig(const std::string& filename) {
 	std::ifstream file(filename);
 	std::string line;
 
-	//predvolene hodnoty ak by subor chybal 
 	
-
-	m_robotPort = 10001;
+	// Predvolene hodnoty pouzite ak subor config.txt neexistuje
+	m_robotPort = 23432;
 	m_leftGloveIdStr = "4305";
 	m_rightGloveIdStr = "4272";
 	
@@ -124,9 +127,11 @@ void GloveValues::loadConfig(const std::string& filename) {
 	}
 }
 
+//// =========================== Treba odkomentovat ak chceme posielat dalsie commandy (ak ano treba dorobit nove podmienky v TP programe) ======================
 
 std::string GloveValues::gesturesToCommand(const std::string& gesture) {
 
+	// HMG kodovanie: H = ruka (1=prava, 2=lava), M = rezim (1=XYZ, 2=Rot, 3=Custom, 0=system), G = prikaz
 	if (gesture == "Right_X") return "110";
 	if (gesture == "Right_Y") return "111";
 	if (gesture == "Right_Z") return "112";
@@ -143,7 +148,7 @@ std::string GloveValues::gesturesToCommand(const std::string& gesture) {
 	if (gesture == "Left_Positive_Direction") return "250";
 	if (gesture == "Left_Negative_Direction") return "251";
 	if (gesture == "Left_Stop_Resume") return "201";
-	return "";
+	return "";  // gesto bez priradeného prikazu (napr. prepinanie rezimov - riadene lokalne)
 }
 
 
@@ -165,12 +170,9 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 
 	this->printInfo("GloveValues: Peripheral connected ... Starting subscribe ...");
 
-	GSdk::BoardTools::WearingPosition position;
 
-	////////////////////////////////
-	//urcenie podla id
-	//////////////
-	//LEFT =4305
+	// Identifikacia strany rukavice podla ID obsiahnuteho v nazve BT zariadenia
+	GSdk::BoardTools::WearingPosition position;
 	if (gloveName.find(m_leftGloveIdStr) != std::string::npos) {
 		m_leftGloveName = gloveName;
 		position = GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove;
@@ -186,7 +188,7 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	}
 
 
-
+	// Otvorenie CSV suborov s casovou znackou v nazve pre jednoznacnu identifikaciu merania
 	std::time_t t = std::time(nullptr);
 	std::tm* now = std::localtime(&t);
 	char filename[128];
@@ -218,8 +220,8 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 	std::ofstream& rawFile = m_rawLogFiles[gloveName];
 	rawFile.open(rawFilename);
 	m_rawHeaderWritten[gloveName] = false;
-	//////
 
+	// Vypis zoznamu detekovanych senzorov pre diagnosticke ucely
 	try {
 
 
@@ -247,7 +249,7 @@ void GloveValues::onPeripheralConnected(std::shared_ptr<GSdk::Board::BoardPeriph
 
 	subscribe(gloveName, board);
 
-	//ak je trieda ImuConfiguration tak volame citanie 
+	// Nacitanie IMU konfigurácie ak je tato trieda instanciou ImuConfiguration
 	auto imuConfigPtr = dynamic_cast<ImuConfiguration*>(this);
 	if (imuConfigPtr) {
 		imuConfigPtr->readImu();
@@ -259,21 +261,19 @@ void GloveValues::onPeripheralDisconnected() {
 
 	this->printInfo("GloveValues: Peripheral disconnected ... unsubscribing ...");
 
-	// Pre každú rukavicu, ktorú si registroval
 	for (auto& [name, board] : m_peripherals) {
 		if (board) {
-			// A) Zastav streamovanie v rukavici (toto uvoľní Bluetooth kanál!)
+			// Zastavenie BT streamu - uvolnenie Bluetooth kanálu
 			auto empty = GSdk::Board::getEmptyStreamTimeslots();
 			board->streamTimeslots().write(empty);
 
-			// B) Odpoj callback
+			// Odpojenie callbacku pomocou ulozeneho ID streamu
 			if (m_streamIDs.count(name)) {
 				board->streamReceived().disconnect(m_streamIDs[name]);
 			}
 		}
 	}
 
-	// C) Vyčisti mapy a zatvor súbory
 	m_streamIDs.clear();
 	for (auto& [name, file] : m_logFiles) {
 		if (file.is_open()) file.close();
@@ -312,12 +312,14 @@ void GloveValues::startExperiment() {
 	}
 	m_experimentMode = true;
 	this->printInfo("[Experiment] Experiment mode ON");
+	
+	// Skratenie casoveho okna na 1 ms pre okamzitu detekciu pocas experimentu
 	m_leftGestureRecognizer.setExperimentMode(true);
 	m_rightGestureRecognizer.setExperimentMode(true);
 	m_experiment.start();
 }
 
-//funkcia obnovujuca povodne casove okna inak pocas experimentu casove okna = 1ms
+//Funkcia obnovujuca povodne casove okna inak pocas experimentu casove okna = 1ms
 void GloveValues::stopExperiment() {
 	m_experimentMode = false;
 	m_leftGestureRecognizer.setExperimentMode(false);
@@ -330,6 +332,7 @@ void GloveValues::confirmCalibrationStep(const std::array<float, 5>& rawleft,con
 {
 	if (!m_calibrationManager.m_isCalibrating) return;
 
+	// Spustenie zberu vzoriek pre aktualny krok kalibracie
 	switch (m_calibrationState)
 	{
 	case CalibrationState::CalibratingLeftOpen:
@@ -370,7 +373,7 @@ void GloveValues::logRawToCSV(
 
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
 
-	// ----- èas -----
+	// Casova znacka s presnostou na milisekundy
 	auto now = std::chrono::system_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
 		now.time_since_epoch()) % 1000;
@@ -382,7 +385,7 @@ void GloveValues::logRawToCSV(
 	char timeStr[32];
 	std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
 
-	// ----- hlavièka -----
+	// Hlavicka CSV - zapisuje sa iba raz na zaciatku suboru
 	if (!m_rawHeaderWritten[gloveName]) {
 		rawFile << "Timestamp_";
 
@@ -398,14 +401,13 @@ void GloveValues::logRawToCSV(
 		m_rawHeaderWritten[gloveName] = true;
 	}
 
-	// ----- hodnoty -----
 	rawFile << timeStr << "." << std::setw(3) << std::setfill('0') << ms.count();
 
 	for (int tag : assembly.tags()) {
 		if (m_logOnlyBending && (tag % 2 == 0))
 			continue;
 
-		int index = assembly.findIndex(tag) * 4;
+		int index = assembly.findIndex(tag) * 4; // kazda float hodnota zabera 4 bajty
 		float val = 0.0f;
 
 		if (index >= 0 && index + 3 < values.size()) {
@@ -427,7 +429,7 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 		return;
 	}
 
-	// BEZPECNOSTNE GESTA
+	// Bezpecnostne gesto - ma prioritu pred vsetkymi ostatnymi
 	if (gesture == "Left_Stop_Resume") {
 		this->printInfo("[EMERGENCY][LEFT] STOP / RESUME");
 		if (m_robotServer) {
@@ -451,7 +453,7 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 	}
 
 
-	// JEDNOTLIVE MODY
+	// Prepinanie rezimu riadenia robota
 	if (gesture == "Left_XYZ_Mode") {
 		m_currentMode = ControlMode::XYZ;
 		this->printInfo("-------------- [MODE] XYZ --------------");
@@ -492,14 +494,14 @@ void GloveValues::handleLeftGesture(const std::string& gesture) {
 
 
 void GloveValues::handleRightGesture(const std::string& gesture) {
-
+	// Globalne gesto - zapina/vypina spracovanie gest lavej ruky
 	if (gesture == "Lock_Unlock") {
 		m_leftHandEnabled = !m_leftHandEnabled;
 		this->printInfo("[SYSTEM] Left hand " + std::string(m_leftHandEnabled ? "ENABLED" : "DISABLED"));
 		return;
 	}
 
-	//Bezpecnostne
+	// Bezpecnostne gesto - bypasuje filter rezimu
 	if (gesture == "Right_Stop_Resume") {
 		this->printInfo("[EMERGENCY][RIGHT] STOP / RESUME");
 		if (m_robotServer) {
@@ -512,7 +514,7 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 		return;
 	}
 
-	//Filtrovanie podla modu
+	// Blokovanie gest, ktore nie su povolene v aktualnom rezime
 	if (!isRightGestureAllowed(gesture)) {
 		return;
 	}
@@ -532,58 +534,43 @@ void GloveValues::handleRightGesture(const std::string& gesture) {
 
 bool GloveValues::isRightGestureAllowed(const std::string& gesture) const {
 
-	//vzdy povolene
+	// Bezpecnostne gesta su vzdy povolene bez ohladu na rezim
 	if (m_globalSafetyGestures.count(gesture)) {
 		return true;
 	}
-	//vzdy povolene
+	// Systemove gesta su vzdy povolene
 	if (gesture == "Lock_Unlock" || gesture == "Gesto_1" || gesture == "Gesto_2" || gesture == "Gesto_3") {
 		return true;
 	}
 
-	//ak nic tak nic nepovol
+	// Kontrola mnoziny povolených gest pre aktualny rezim
 	auto it = m_allowedRightGesture.find(m_currentMode);
 	if (it == m_allowedRightGesture.end()) {
 		return false;
 	}
-	//povolene gesta pre aktualny mod3
 
 	return it->second.count(gesture) > 0;
-
-
 }
 
 
 
 
-//kriticka cast ktora by mala byt co najrychlejsia preto v mili sekundach
+// Kriticka funkcia volana pri kazdom BT frame - musi byt co najrychlejsia
 void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8_t> values, GSdk::BoardTools::WearingPosition position) {
 
-
-	
-
-	// ------------------------------------------------------------
-		// kontrola log súboru
-		// ------------------------------------------------------------
 	auto it = m_logFiles.find(gloveName);
 	if (it == m_logFiles.end() || !it->second.is_open())
 		return;
 
 	std::ofstream& logFile = it->second;
 
-	// ------------------------------------------------------------
-	// urèenie ruky
-	// ------------------------------------------------------------
-	const bool isLeft =
-		(position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove);
+	const bool isLeft = (position == GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove);
 
 	const std::string sideKEY = isLeft ? "Left" : "Right";
 
 	GSdk::BoardTools::ExternalSensorAssembly assembly(position);
 
-	// ------------------------------------------------------------
-	// èasová znaèka
-	// ------------------------------------------------------------
+	// Casova znacka s presnostou na milisekundy
 	auto now = std::chrono::system_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
 		now.time_since_epoch()) % 1000;
@@ -598,9 +585,7 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 	std::ostringstream timestamp;
 	timestamp << TIMEstr << "." << std::setfill('0') << std::setw(3) << ms.count();
 
-	// ------------------------------------------------------------
-	// hlavièka CSV
-	// ------------------------------------------------------------
+	// Hlavicka CSV - zapisuje sa iba raz na zaciatku suboru
 	if (!m_headerWritten[gloveName]) {
 		logFile << "Timestamp_" << gloveName;
 
@@ -617,17 +602,12 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 		m_headerWritten[gloveName] = true;
 	}
 
-	// ------------------------------------------------------------
-	// RAW hodnoty (HW poradie senzorov)
-	// ------------------------------------------------------------
+	// Extrakcia surovych hodnot v HW poradí senzorov
 	auto rawValues = getNormalizedFingerValues(values, assembly);
-
 	std::array<float, 5> fingerRaw{};
 	std::copy_n(rawValues.begin(), 5, fingerRaw.begin());
-
-	// ------------------------------------------------------------
-	// KALIBRÁCIA  VDY z fingerRaw (HW poradie!)
-	// ------------------------------------------------------------
+	
+	// --- KALIBRACIA - zber prvych 100 vzoriek po stlaceni 's' ---
 	if (m_calibrationManager.m_isCalibrating && m_collecting)
 	{
 		switch (m_calibrationState)
@@ -690,75 +670,53 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 			break;
 		}
 
-		return;
+		return; // pocas kalibracie preskakujeme rozpoznavanie gest
 	}
-	// ------------------------------------------------------------
-	// NORMALIZÁCIA POD¼A KALIBRÁCIE (stále HW poradie)
-	// ------------------------------------------------------------
-	auto normalizedValues =
-		m_calibrationManager.normalize(sideKEY, fingerRaw);
 
-	// ------------------------------------------------------------
-	// LOG normalizovaných hodnôt (HW poradie)
-	// ------------------------------------------------------------
+	// --- NORMALIZACIA - aplikacia kalibracnych hodnot ---
+	auto normalizedValues = m_calibrationManager.normalize(sideKEY, fingerRaw);
+
 	logFile << timestamp.str();
 	for (float v : normalizedValues)
 		logFile << ";" << v;
 	logFile << "\n";
 	logFile.flush();
 
-	// ------------------------------------------------------------
-	// MAPOVANIE PRSTOV  LEN PRE GESTÁ
-	// ------------------------------------------------------------
+	// --- MAPOVANIE PRSTOV PRE ROZPOZNAVANIE GEST ---
+	// Senzory lavej ruky su v opacnom HW poradí oproti pravej - prehodíme ich
 	std::array<float, 5> gestureValues{};
 
 	if (isLeft) {
-		// ¾avá ruka  prehodené poradie
-		gestureValues[0] = normalizedValues[4]; // thumb
-		gestureValues[1] = normalizedValues[3]; // index
-		gestureValues[2] = normalizedValues[2]; // middle
-		gestureValues[3] = normalizedValues[1]; // ring
-		gestureValues[4] = normalizedValues[0]; // pinky
+		gestureValues[0] = normalizedValues[4]; // thumb/palec
+		gestureValues[1] = normalizedValues[3]; // index/ukazovak
+		gestureValues[2] = normalizedValues[2]; // middle/prostrednik
+		gestureValues[3] = normalizedValues[1]; // ring/prstenik
+		gestureValues[4] = normalizedValues[0]; // pinky/malicek
 	}
 	else {
-		// pravá ruka  rovnaké poradie
+		// prava ruka - poradie zodpoveda definiciam gest
 		gestureValues = normalizedValues;
 	}
 
-	// ------------------------------------------------------------
-	// ROZPOZNÁVANIE GEST
-	// ------------------------------------------------------------
-
+	
 	if (m_calibrationManager.m_isCalibrating) {
 		return;
 	}
 
-	// PRAVÁ RUKA  lock/unlock
+	// --- ROZPOZNAVANIE GEST ---
 	if (isLeft) {
 		if (!m_leftHandEnabled) {
 			return;
 		}
 
-		// POVODNE PRED EXPERIMENTOM
-		/*
-		*
-		if (auto Left_gesture = m_leftGestureRecognizer.recognize(gestureValues)) {
-			handleLeftGesture(*Left_gesture);
-		}
-	}
-	else {
-		if (auto Right_gesture = m_rightGestureRecognizer.recognize(gestureValues)) {
-			handleRightGesture(*Right_gesture);
-		}
-		*/
-
 		if (auto Left_gesture = m_leftGestureRecognizer.recognize(gestureValues)) {
 			std::string gesture = *Left_gesture;
-			m_leftGestureRecognizer.reset();
+			m_leftGestureRecognizer.reset(); // reset citacov po detekcii
+
 			if (m_experimentMode && m_experiment.isRunning()) {
 				m_experiment.processGesture("LEFT", gesture);
 				if (!m_experiment.isRunning()) {
-					stopExperiment();
+					stopExperiment();		// auto-zastavenie po poslednom geste
 				}
 			}
 			else {
@@ -783,8 +741,6 @@ void GloveValues::logToCSV(const std::string& gloveName, const std::vector<uint8
 
 		}
 
-		
-
 	}
 
 }
@@ -796,9 +752,9 @@ std::array<float, 5> GloveValues::getNormalizedFingerValues(const std::vector<ui
 
 	for (int tag : assembly.tags()) {
 		if (m_logOnlyBending && (tag % 2 == 0)) {
-			continue;
+			continue;								// preskoc IMU senzory
 		}
-		int index = assembly.findIndex(tag) * 4;
+		int index = assembly.findIndex(tag) * 4;	// kazda float hodnota zabera 4 bajty v BT datach
 		float val = 0.0f;
 
 		if (index >= 0 && index + 3 < values.size()) {
@@ -808,7 +764,7 @@ std::array<float, 5> GloveValues::getNormalizedFingerValues(const std::vector<ui
 
 		fingerValues[count] = val;
 		count++;
-		if (count >= 5) break;
+		if (count >= 5) break;						// nacitavame len prvy 5 senzorov (prsty)
 
 	}
 	return fingerValues;
@@ -820,59 +776,49 @@ std::array<float, 5> GloveValues::getNormalizedFingerValues(const std::vector<ui
 
 void GloveValues::subscribe(const std::string& gloveName, std::shared_ptr<GSdk::Board::BoardPeripheral> board) {
 
-
-
-	//viac pozri StreamTimeslots.h
-	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); //potrebujem to vynulovat na zaciatku
-	streamTimeslots.sensorsState = 6; //6 alebo GSdkBoardStreamTypeSensorsState; //data o senzore prstov( data represents conductivity)
-
-	/*
-	streamTimeslots.taredQuaternion = 6 //ak je treba aj polohu ruky(IMU)
-	*/
+	auto streamTimeslots = GSdk::Board::getEmptyStreamTimeslots(); 
+	streamTimeslots.sensorsState = 6; //6 alebo GSdkBoardStreamTypeSensorsState - data ohybu prstov
+	
+	
+	// Pre aktivaciu IMU streamu odkomentovat nasledujuci riadok:
+	//streamTimeslots.taredQuaternion = 6; 
+	
 
 	if (!board->streamTimeslots().write(streamTimeslots)) {
 		this->printError("[ " + gloveName + " ]" + "Unable to set stream timeslots");
 		return;
 	}
 
+	// Urcenie strany rukavice pre callback na zaklade ID v nazve zariadenia
 	GSdk::BoardTools::WearingPosition position =
 		(gloveName.find("4305") != std::string::npos)
 		? GSdk::BoardTools::WearingPosition::GSdkWearingPositionLeftGlove
 		: GSdk::BoardTools::WearingPosition::GSdkWearingPositionRightGlove;
 
+	// Registracia callbacku - volany asynchronne pri kazdom prichode BT datoveho paketu
 	int streamID = board->streamReceived().connect([this, gloveName, position](const GSdk::Board::BoardStreamEventArgs& args) {
-		//GSdkBoardStreamTypeTaredAltitude -> brief Relative altitude from taring point, meters
 
 		if (args.streamType == GSdkBoardStreamTypeSensorsState) {
 			auto value = args.bytes();
 
-
-
-
-			//cas
 			auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::tm tm = *std::localtime(&now);
 			char timeStr[32];
+			std::strftime(timeStr, sizeof(timeStr), "%H:%M:%S", &tm);
 
-			std::strftime(timeStr, sizeof(timeStr), "%H: %M: %S", &tm);
-
-
-			//this->printInfo("[ "+ gloveName + " ]" + "Received sensorsState data (" + std::to_string(value.size()) + " bytes)");
-			logRawToCSV(gloveName, value, position);
-			logToCSV(gloveName, value, position);
+			logRawToCSV(gloveName, value, position);	// zapis surovych dat
+			logToCSV(gloveName, value, position);		// normalizacia + rozpoznavanie gest
 
 		}
 
-		//GSdkBoardStreamTypeTaredQuaternion -> brief Tared relative reference orientation quaternion
 		if (args.streamType == GSdkBoardStreamTypeTaredQuaternion) {
 			auto quatArgs = static_cast<const GSdk::Board::BoardQuaternionfEventArgs&> (args);
 			auto quatV = quatArgs.value();
 			this->printInfo("Received tared quaternion " + getString(quatV));
 		}
-		});
+	});
 
-
-	m_streamIDs[gloveName] = streamID;
-
+	m_streamIDs[gloveName] = streamID;					// ulozenie ID pre neskorsi odpoj callbacku
+	 
 }
 

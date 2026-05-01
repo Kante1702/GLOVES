@@ -1,3 +1,8 @@
+// LoggerBase.cpp
+// Implementacia farebneho konzoloveho logovania s casovou znackou.
+// Na Windows sa pouziva WinAPI (SetConsoleTextAttribute) pre nastavenie farby textu.
+
+
 #include "LoggerBase.hpp"
 
 #include <iostream>
@@ -29,6 +34,8 @@ enum class Color
 	Red, Orange, Green
 };
 
+
+// Vrati aktualny cas ako retazec vo formate HH : MM:SS(thread - safe)
 string timeInfo() {
 
 	auto now = chrono::system_clock::now();
@@ -43,8 +50,7 @@ string timeInfo() {
 	localtime_r(&now_time, &loctime);
 #endif
 
-	//formatovanie do tvaru HH::MM:SS pomocou sstreamov
-	//setw vytvara dve 'pozicie' ktore spravne doplnuje setfill
+	// setw(2) + setfill('0') zaistuje vodiacu nulu pre jednociferne hodnoty (napr. 09)
 	std::ostringstream osStr;
 	osStr << std::setw(2) << std::setfill('0') << loctime.tm_hour << ":"
 		<< std::setw(2) << std::setfill('0') << loctime.tm_min << ":"
@@ -59,7 +65,8 @@ string timeInfo() {
 void print(const std::string& message, const Color& color) {
 
 #if defined(WINDOWS)
-	WORD mask = 0;	//16-bitove cislo pouziva sa pri nastavovani farby textu v konzole
+	// 16-bitova maska pre nastavenie farby textu v konzole cez WinAPI
+	WORD mask = 0;	
 	switch (color)
 	{
 	case Color::Green:
@@ -79,16 +86,16 @@ void print(const std::string& message, const Color& color) {
 #else 
 	unused(color);
 #endif
-	std::cout << timeInfo() << ":" << message << std::endl; //vypisane textu po zmene farby konzoly
+	std::cout << timeInfo() << ":" << message << std::endl;
 #if defined(WINDOWS)
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY); //vratime povodny stav
+	// Obnovenie povodnej farby konzoly po vypise
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY); 
 #endif
 }
 
 
 
 LoggerBase::LoggerBase(const std::string& name) :m_name(name) {
-	//////////////// nic
 }
 
 void LoggerBase::setName(const std::string& name)  {

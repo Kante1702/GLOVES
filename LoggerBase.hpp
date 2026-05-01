@@ -1,3 +1,12 @@
+// LoggerBase.hpp
+// Abstraktna zakladna trieda pre vsetky komponenty systemu.
+// Poskytuje farebny konzolovy vystup s casovou znackou a definuje rozhranie
+// pre pripojenie a odpojenie zariadeni (connect/disconnect).
+// Farby: zelena = info, oranzova = varovanie, cervena = chyba.
+//
+// Dedicska hierarchia systemu:
+//   LoggerBase -> GloveConnection -> GloveValues -> ImuConfiguration
+
 #pragma once
 #ifndef LOGGERBASE_HPP
 #define LOGGERBASE_HPP
@@ -8,7 +17,7 @@
 class LoggerBase {
 
 private:
-	std::string m_name;
+	std::string m_name; // nazov modulu zobrazovany v logovacich spravach
 
 public:
 	virtual bool connect() = 0;

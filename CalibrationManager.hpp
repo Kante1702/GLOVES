@@ -1,3 +1,13 @@
+// CalibrationManager.hpp
+// Sprava kalibracie pre obe rukavice.
+// Po stlaceni klavesy 's' sa zacnu zberat vzorky - prvy m_requiredSamples frameov
+// od momentu potvrdenia su ulozene do docasneho vektora, z ktoreho sa nakoniec
+// vypocita priemer pre kazdy prst. Tento priemer sa ulozi ako referencna hodnota
+// (open alebo fist) do prislusneho CalibrationData objektu.
+// Kalibracne data su ukladane do / nacitavane zo suborov calibration_Left.csv
+// a calibration_Right.csv, takze kalibracia nie je potrebna pri kazdom spusteni.
+
+
 
 #pragma once
 #ifndef CALIBRATIONMANAGER_HPP
@@ -15,45 +25,32 @@
 class CalibrationManager {
 
 public:
-	std::unordered_map<std::string, CalibrationData> data;
+	std::unordered_map<std::string, CalibrationData> data;			// kalibracne data indexovane nazvom ruky ("Left"/"Right")
 	bool m_isCalibrating = false;
-	std::unordered_map<std::string, std::vector<std::array<float, 5>>> m_openSamples;
-	std::unordered_map<std::string, std::vector<std::array<float, 5>>> m_fistSamples;
+	std::unordered_map<std::string, std::vector<std::array<float, 5>>> m_openSamples;		// docasne vzorky otvorenej ruky
+	std::unordered_map<std::string, std::vector<std::array<float, 5>>> m_fistSamples;		// docasne vzorky zatvorenej ruky
 
-	size_t m_requiredSamples = 100;
+	size_t m_requiredSamples = 100;		// pocet vzoriek potrebnych na jeden krok kalibracie
 
-	void startCalibration();
-	void finishCalibration();
+	void startCalibration();			// resetuje data a nastavi priznak kalibracie
+	void finishCalibration();			// ukonci kalibraciu
 
-	//raw sluzi na min/max
 	void updateRaw(const std::string& gloveName, const std::array<float, 5>& raw);
-
-
-	//uklada hodnoty pre otvorenu ruku (kalibracia)
 	void setOpenHand(const std::string& gloveName, const std::array<float, 5>& values);
-	
-
-	//uklada hodnoty pre zatvorenu ruku (kalibracia)
 	void setFist(const std::string& gloveName, const std::array<float, 5>& values);
 
+	// Zbiera prvych m_requiredSamples vzoriek, potom vypocita priemer a vrati true
 	bool collectOpenSamples(const std::string& gloveName, const std::array<float, 5>& values);
-	
 	bool collectFistSamples(const std::string& gloveName, const std::array<float, 5>& values);
 	
 
-
-	//kotrola ci je kalibracia kompletna
+	// Vrati true ak su nastavene obe referencne polohy pre danu rukavicu
 	bool isCalibrated(const std::string& gloveName) const;
 
-	//normalizacia
+	// Normalizuje surove hodnoty prstov; ak kalibracia chyba, vrati povodne hodnoty
 	std::array<float, 5> normalize(const std::string& gloveName, const std::array<float, 5>& raw) const;
 
 	void saveToCSV(const std::string& gloveName);
-
-	//nacitanie kalibracnych hodnot
 	void loadFromCSV(const std::string& gloveName);
 };
-
-
-
 #endif // !CALIBRATIONMANAGER_HPP
