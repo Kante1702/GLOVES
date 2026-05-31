@@ -50,7 +50,7 @@ CaptoGlove/
 Edit `config.txt` in the project root before running:
 
 ```
-Robot_Port=10001
+Robot_Port=23432
 LeftGlove_ID=4305
 RightGlove_ID=4272
 ```
@@ -74,6 +74,8 @@ RightGlove_ID=4272
 |-----|--------|
 | `c` | Start calibration |
 | `s` | Save calibration step |
+| `e` | Start gesture experiment |
+| `x` | Stop experiment early |
 | `m` | Send manual command (3-digit code) |
 | `q` | Quit application |
 
@@ -142,7 +144,7 @@ CaptoGlove/
 Pred spustením uprav súbor `config.txt` v koreňovom priečinku projektu:
 
 ```
-Robot_Port=10001
+Robot_Port=23432
 LeftGlove_ID=4305
 RightGlove_ID=4272
 ```
@@ -157,7 +159,7 @@ RightGlove_ID=4272
 
 1. Najprv spusti KAREL program na robote/RobotGuide.
 2. Spusti skompilovanú aplikáciu.
-3. Nauč rukavice a počkaj na Bluetooth pripojenie.
+3. Nasaď si obe rukavice a počkaj na Bluetooth pripojenie.
 4. Kalibrácia sa načíta automaticky zo súborov `calibration_Left.csv` a `calibration_Right.csv`.
 
 ### Ovládanie
@@ -166,6 +168,8 @@ RightGlove_ID=4272
 |--------|-------|
 | `c` | Spustiť kalibráciu |
 | `s` | Uložiť krok kalibrácie |
+| `e` | Spustiť experiment s gestami |
+| `x` | Predčasne ukončiť experiment |
 | `m` | Manuálne zadanie príkazu (3-ciferný kód) |
 | `q` | Ukončiť aplikáciu |
 
