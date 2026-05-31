@@ -1,0 +1,102 @@
+/PROG TP_CAPTOGLOVES
+/MN
+   1:  $MNUFRAMENUM[1]=0 ;
+   2:  $MNUTOOLNUM[1]=2 ;
+   3:  R[100:END_GestTP]=2 ;
+   4:  R[101:END_SMComm]=2 ;
+   5:  R[107:Paused]=0 ;
+   6:  R[102:MOV_STEP]=20 ;
+   7:  R[103:ROT_STEP]=2 ;
+   8:  R[104:MOV_Signed]=20 ;
+   9:  R[105:ROT_Signed]=2 ;
+  10:  R[106:GestureCom]=0 ;
+  11:  PR[90]=JPOS ;
+  12:  PR[90,1]=0 ;
+  13:  PR[90,2]=0 ;
+  14:  PR[90,3]=0 ;
+  15:  PR[90,4]=0 ;
+  16:  PR[90,5]=(-45) ;
+  17:  PR[90,6]=0 ;
+  18:J @PR[90] 100% FINE ;
+  19:  ;
+  20:  RUN CAPTO2 ;
+  21:  WAIT 5.00(sec) ;
+  22:  LBL[1] ;
+  23:  PR[91]=LPOS ;
+  24:  PR[90]=JPOS ;
+  25:  ;
+  26:  IF (R[106:GestureCom]=101) THEN ;
+  27:    IF (R[107:Paused]=0) THEN ;
+  28:      R[107:Paused]=1 ;
+  29:    ELSE ;
+  30:      R[107:Paused]=0 ;
+  31:    ENDIF ;
+  32:    R[106:GestureCom]=0 ;
+  33:  ENDIF ;
+  34:  IF (R[106:GestureCom]=201) THEN ;
+  35:    IF (R[107:Paused]=0) THEN ;
+  36:      R[107:Paused]=1 ;
+  37:    ELSE ;
+  38:      R[107:Paused]=0 ;
+  39:    ENDIF ;
+  40:    R[106:GestureCom]=0 ;
+  41:  ENDIF ;
+  42:  IF (R[107:Paused]=1), JMP LBL[1] ; 
+  43:  ;
+  44:  IF (R[106:GestureCom]=130) THEN ;
+  45:    R[100:END_GestTP]=0 ;
+  46:    R[101:END_SMComm]=0 ;
+  47:    R[106:GestureCom]=0 ;
+  48:  ENDIF ;
+  49:  ;
+	
+	IF (R[106:GestureCom]=131) THEN 
+		//program ale zatial len vypis 
+	ENDIF
+
+
+  50:  IF (R[106:GestureCom]=250) THEN ;
+  51:    R[104:MOV_Signed]=R[102:MOV_STEP] ;
+  52:    R[105:ROT_Signed]=R[103:ROT_STEP] ;
+  53:    R[106:GestureCom]=0 ;
+  54:  ENDIF ;
+  55:  IF (R[106:GestureCom]=251) THEN ;
+  56:    R[104:MOV_Signed]=0-R[102:MOV_STEP] ;
+  57:    R[105:ROT_Signed]=0-R[103:ROT_STEP] ;
+  58:    R[106:GestureCom]=0 ;
+  59:  ENDIF ;
+  60:  ;
+  61:  IF (R[106:GestureCom]=110) THEN ;
+  62:    PR[91,1]=PR[91,1]+R[104:MOV_Signed] ;
+  63:L  @PR[91] 250mm/sec CNT100 ;
+  64:    R[106:GestureCom]=0 ;
+  65:  ENDIF ;
+  66:  IF (R[106:GestureCom]=111) THEN ;
+  67:    PR[91,2]=PR[91,2]+R[104:MOV_Signed] ;
+  68:L  @PR[91] 250mm/sec CNT100 ;
+  69:    R[106:GestureCom]=0 ;
+  70:  ENDIF ;
+  71:  IF (R[106:GestureCom]=112) THEN ;
+  72:    PR[91,3]=PR[91,3]+R[104:MOV_Signed] ;
+  73:L  @PR[91] 250mm/sec CNT100 ;
+  74:    R[106:GestureCom]=0 ;
+  75:  ENDIF ;
+  76:  IF (R[106:GestureCom]=120) THEN ;
+  77:    PR[91,4]=PR[91,4]+R[105:ROT_Signed] ;
+  78:L  @PR[91] 250mm/sec CNT100 ;
+  79:    R[106:GestureCom]=0 ;
+  80:  ENDIF ;
+  81:  IF (R[106:GestureCom]=121) THEN ;
+  82:    PR[91,5]=PR[91,5]+R[105:ROT_Signed] ;
+  83:L  @PR[91] 250mm/sec CNT100 ;
+  84:    R[106:GestureCom]=0 ;
+  85:  ENDIF ;
+  86:  IF (R[106:GestureCom]=122) THEN ;
+  87:    PR[91,6]=PR[91,6]+R[105:ROT_Signed] ;
+  88:L  @PR[91] 250mm/sec CNT100 ;
+  89:    R[106:GestureCom]=0 ;
+  90:  ENDIF ;
+  91:  ;
+  92:  IF R[100:END_GestTP]=2,JMP LBL[1] ;
+  93:  R[101:END_SMComm]=0 ;
+/END

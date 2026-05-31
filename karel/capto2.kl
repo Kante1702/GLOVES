@@ -1,0 +1,81 @@
+PROGRAM capto2
+%COMMENT='Gesture_motion'
+%STACKSIZE = 4000
+%NOLOCKGROUP
+%NOPAUSE=ERROR+COMMAND+TPENABLE
+%NOPAUSESHFT
+%NOABORT=ERROR + COMMAND
+%ENVIRONMENT uif
+%ENVIRONMENT sysdef
+%ENVIRONMENT memo
+%ENVIRONMENT kclop
+%ENVIRONMENT bynam
+%ENVIRONMENT fdev
+%ENVIRONMENT flbt
+%ENVIRONMENT strng
+%ENVIRONMENT regope
+%INCLUDE klevccdf
+%INCLUDE klevkeys
+%INCLUDE klevkmsk
+
+
+VAR
+	file_var		: FILE
+	tmp_int 	: INTEGER
+	tmp_str		: STRING[32]
+	status		: INTEGER
+	entry 		: INTEGER
+	r_flag		: BOOLEAN
+	i_val		: INTEGER
+	r_val		: REAL
+	statusreg	: INTEGER
+	loop		: INTEGER
+	gest_comm  : INTEGER
+	
+	
+	
+BEGIN
+	loop = 1
+	WRITE('Test..',CR)
+	SET_FILE_ATR(file_var, ATR_IA)
+	SET_VAR(entry, '*SYSTEM*','$HOSTC_CFG[2].$SERVER_PORT',23432,status)
+	-- Connect the tag
+	WRITE('Connecting..',CR)
+	MSG_CONNECT('C2:',status)
+	IF status = 0 THEN
+		WRITE('Connection OK',CR)
+	ELSE
+		WRITE('Connect ERR No. ',status,CR)
+	ENDIF
+
+	IF status = 0 THEN
+		OPEN FILE file_var('rw','C2:')
+		status = IO_STATUS(file_var)
+		IF status = 0 THEN
+			-- citanie registra no. 101
+			GET_REG(101,r_flag,i_val,r_val,statusreg)
+			WHILE  i_val=2 DO
+				-- citanie stringu 
+				BYTES_AHEAD(file_var, entry, status)
+				READ file_var(tmp_str::3)
+				status = IO_STATUS(file_var)
+				CNV_STR_INT(tmp_str,gest_comm)
+				SET_INT_REG(106,gest_comm,statusreg)
+				WRITE('Command: ',gest_comm,CR)			
+				GET_REG(101,r_flag,i_val,r_val,statusreg)
+				IF status <> 0 THEN
+					WRITE('Loop Test Fails',CR)
+					i_val=0 
+				ENDIF
+			
+			ENDWHILE
+			WRITE('Closing...',CR)
+			CLOSE FILE file_var
+		ELSE
+			WRITE('Error Opening File',CR)
+		ENDIF
+		WRITE('Disconnecting..',CR)
+		MSG_DISCO('C2:',status)
+		WRITE('Done.',CR)
+	ENDIF
+END capto2
