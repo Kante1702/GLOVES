@@ -1,8 +1,6 @@
 # Visual Studio
 .vs/
-x64/
-[Dd]ebug/
-[Rr]elease/
+src/x64/
 *.user
 *.obj
 *.exe
